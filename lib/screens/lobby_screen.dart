@@ -61,17 +61,50 @@ class _LobbyScreenState extends State<LobbyScreen> {
 
       ),
 
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: Column(
 
-        onPressed: aliases.length == names.length
+      mainAxisSize: MainAxisSize.min,
 
-            ? null
+      children: [
 
-            : addTeam,
+        FloatingActionButton.small(
 
-        child: const Icon(Icons.add),
+          heroTag: "add",
 
-      ),
+          onPressed: names.length >= aliases.length
+              ? null
+              : addTeam,
+
+          child: const Icon(Icons.add),
+
+        ),
+
+        const SizedBox(height: 10),
+
+        FloatingActionButton.small(
+
+          heroTag: "remove",
+
+          onPressed: names.length <= 1
+              ? null
+              : () {
+
+            setState(() {
+
+              names.removeLast();
+              hospitals.removeLast();
+
+            });
+
+          },
+
+          child: const Icon(Icons.remove),
+
+        ),
+
+      ],
+
+    ),
 
       body: ListView.builder(
 

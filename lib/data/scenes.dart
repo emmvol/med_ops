@@ -16,7 +16,7 @@ const scenes = [
 
         "\n\n"
 
-        "Fue encontrado inconsciente en un callejón del centro de San Aurelio."
+        "Fue encontrado inconsciente en un callejón del centro de San Pachuca."
 
         "\n\n"
 

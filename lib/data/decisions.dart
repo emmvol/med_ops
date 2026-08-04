@@ -17,7 +17,7 @@ final Map<String, Decision> decisions = {
 
     type: DecisionType.medical,
 
-    duration: 1,
+    apCost: 1,
 
     moneyCost: 150,
 
@@ -47,7 +47,7 @@ final Map<String, Decision> decisions = {
 
     type: DecisionType.investigation,
 
-    duration: 1,
+    apCost: 2,
 
     moneyCost: 300,
 
@@ -75,7 +75,7 @@ final Map<String, Decision> decisions = {
 
     type: DecisionType.investigation,
 
-    duration: 1,
+    apCost: 1,
 
     moneyCost: 0,
 
@@ -103,7 +103,7 @@ final Map<String, Decision> decisions = {
 
     type: DecisionType.investigation,
 
-    duration: 2,
+    apCost: 2,
 
     moneyCost: 400,
 

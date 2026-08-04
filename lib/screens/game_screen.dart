@@ -5,6 +5,7 @@ import '../models/game_state.dart';
 import '../models/patient.dart';
 import '../models/team.dart';
 
+import '../widgets/case_header.dart';
 import '../widgets/decision_card.dart';
 import '../widgets/evidence_panel.dart';
 import '../widgets/info_panel.dart';
@@ -69,11 +70,23 @@ class _GameScreenState extends State<GameScreen> {
 
             children: [
 
+              CaseHeader(
+
+                round: engine.game.roundManager.round,
+
+                currentTeam: engine.currentTeam,
+
+                title: node.title,
+
+              ),
+
+              const SizedBox(height: 12),
+
               TeamDashboard(
 
                 teams: engine.game.teams,
 
-                currentTurn: engine.game.currentTurn,
+                currentTurn: engine.game.roundManager.currentTeam,
 
               ),
 
@@ -178,6 +191,44 @@ class _GameScreenState extends State<GameScreen> {
                         ],
 
                       ),
+
+                    ),
+
+                    FilledButton.icon(
+
+                      onPressed: () {
+
+                        engine.currentTeam.actionPoints = 3;
+
+                        engine.nextTurn();
+
+                        final event = engine.getRoundEvent();
+
+                        if (event != null) {
+
+                          showDialog(
+
+                            context: context,
+
+                            builder: (_) => AlertDialog(
+
+                              title: Text(event.title),
+
+                              content: Text(event.description),
+
+                            ),
+
+                          );
+
+                        }
+
+                        setState(() {});
+
+                      },
+
+                      icon: const Icon(Icons.skip_next),
+
+                      label: const Text("Finalizar turno"),
 
                     ),
 

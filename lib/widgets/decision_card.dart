@@ -99,7 +99,7 @@ class DecisionCard extends StatelessWidget {
 
                           avatar: const Icon(Icons.schedule),
 
-                          label: Text("${decision.duration}"),
+                          label: Text("${decision.apCost}"),
 
                         ),
 

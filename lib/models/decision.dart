@@ -41,7 +41,9 @@ class Decision {
 
   final DecisionType type;
 
-  final int duration;
+  final bool unique;
+
+  final int apCost;
 
   const Decision({
     required this.id,
@@ -54,8 +56,6 @@ class Decision {
     required this.icon,
     required this.type,
 
-    this.duration = 1,
-
     this.evidence,
 
     this.successRate = 100,
@@ -63,6 +63,10 @@ class Decision {
     this.failResult = "",
 
     this.failNode = "",
+
+    this.unique = true,
+
+    this.apCost = 1,
   });
 
 }

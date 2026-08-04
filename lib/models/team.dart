@@ -18,6 +18,8 @@ class Team {
   /// Evidencias descubiertas
   final List<String> evidence;
 
+  int actionPoints;
+
   Team({
 
     required this.name,
@@ -30,6 +32,8 @@ class Team {
     this.currentNode = "START",
 
     List<String>? evidence,
+
+    this.actionPoints = 3,
 
   })  : evidence = evidence ?? [];
 

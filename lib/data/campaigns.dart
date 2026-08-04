@@ -13,7 +13,7 @@ const operationQuimera = Campaign(
 
   intro: [
 
-    "Ciudad de San Aurelio.",
+    "Ciudad de San Pachuca.",
 
     "Durante las últimas seis semanas se han registrado múltiples intoxicaciones por una nueva droga de composición desconocida.",
 
