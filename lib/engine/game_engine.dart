@@ -182,4 +182,10 @@ class GameEngine {
     );
 
   }
+
+  void endTurn() {
+    currentTeam.actionPoints = 3;
+
+    nextTurn();
+  }
 }
