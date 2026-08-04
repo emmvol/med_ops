@@ -93,19 +93,65 @@ class GameEngine {
 
   }
 
-  GameEvent? getRoundEvent(){
+  GameEvent? checkRandomEvent() {
 
-    if(game.roundManager.round.isOdd){
+    final roll = random.nextInt(100);
 
-      return null;
+    if (
+
+    game.flags.patientAwake == false &&
+
+        roll < 12
+
+    ) {
+
+      game.flags.patientAwake = true;
+
+      return randomEvents.firstWhere(
+
+            (e) => e.title == "Paciente despierta",
+
+      );
 
     }
 
-    return randomEvents[
+    if (
 
-    random.nextInt(randomEvents.length)
+    game.flags.policeCalled &&
 
-    ];
+        !game.flags.phoneTracked &&
+
+        roll < 20
+
+    ) {
+
+      game.flags.phoneTracked = true;
+
+      return randomEvents.firstWhere(
+
+            (e) => e.title == "Teléfono localizado",
+
+      );
+
+    }
+
+    if (
+
+    game.patient.stability < 40 &&
+
+        roll < 25
+
+    ) {
+
+      return randomEvents.firstWhere(
+
+            (e) => e.title == "Paciente empeora",
+
+      );
+
+    }
+
+    return null;
 
   }
 

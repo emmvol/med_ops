@@ -148,25 +148,26 @@ class _GameScreenState extends State<GameScreen> {
                             child: ListView(
 
                               children: engine
+
                                   .getAvailableDecisions()
 
                                   .map(
 
-                                    (decision)=>DecisionCard(
+                                    (decision) => DecisionCard(
 
                                   decision: decision,
 
-                                  onTap: () async{
+                                  onTap: () async {
 
                                     final result =
-                                    engine.executeDecision(
-                                        decision);
+
+                                    engine.executeDecision(decision);
 
                                     await showDialog(
 
                                       context: context,
 
-                                      builder: (_)=>ResultDialog(
+                                      builder: (_) => ResultDialog(
 
                                         result: result,
 
@@ -174,7 +175,7 @@ class _GameScreenState extends State<GameScreen> {
 
                                     );
 
-                                    setState((){});
+                                    setState(() {});
 
                                   },
 
@@ -188,47 +189,103 @@ class _GameScreenState extends State<GameScreen> {
 
                           ),
 
-                        ],
+                          const SizedBox(height: 12),
 
-                      ),
+                          Row(
 
-                    ),
+                            children: [
 
-                    FilledButton.icon(
+                              Expanded(
 
-                      onPressed: () {
+                                child: InfoPanel(
 
-                        engine.currentTeam.actionPoints = 3;
+                                  title: "AP",
 
-                        engine.nextTurn();
+                                  value: "${team.actionPoints}/3",
 
-                        final event = engine.getRoundEvent();
+                                ),
 
-                        if (event != null) {
+                              ),
 
-                          showDialog(
+                              const SizedBox(width: 10),
 
-                            context: context,
+                              Expanded(
 
-                            builder: (_) => AlertDialog(
+                                child: InfoPanel(
 
-                              title: Text(event.title),
+                                  title: "Reputación",
 
-                              content: Text(event.description),
+                                  value: "${team.trust}",
+
+                                ),
+
+                              ),
+
+                              const SizedBox(width: 10),
+
+                              Expanded(
+
+                                child: InfoPanel(
+
+                                  title: "Fondos",
+
+                                  value: "\$${team.money}",
+
+                                ),
+
+                              ),
+
+                            ],
+
+                          ),
+
+                          const SizedBox(height: 12),
+
+                          SizedBox(
+
+                            width: double.infinity,
+
+                            child: FilledButton.icon(
+
+                              icon: const Icon(Icons.skip_next),
+
+                              label: const Text("Finalizar turno"),
+
+                              onPressed: () {
+
+                                engine.endTurn();
+
+                                final event = engine.checkRandomEvent();
+
+                                if (event != null) {
+
+                                  showDialog(
+
+                                    context: context,
+
+                                    builder: (_) => AlertDialog(
+
+                                      title: Text(event.title),
+
+                                      content: Text(event.description),
+
+                                    ),
+
+                                  );
+
+                                }
+
+                                setState(() {});
+
+                              },
 
                             ),
 
-                          );
+                          ),
 
-                        }
+                        ],
 
-                        setState(() {});
-
-                      },
-
-                      icon: const Icon(Icons.skip_next),
-
-                      label: const Text("Finalizar turno"),
+                      ),
 
                     ),
 
