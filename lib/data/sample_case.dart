@@ -1,5 +1,4 @@
 import '../models/story_node.dart';
-import '../models/decision.dart';
 
 final Map<String, StoryNode> caseNodes = {
 
@@ -7,70 +6,37 @@ final Map<String, StoryNode> caseNodes = {
 
     id: "START",
 
-    title: "Paciente encontrado",
+    title: "Ingreso a Urgencias",
 
     description:
-    "Varón de 22 años encontrado inconsciente en un callejón.",
+    "Paciente masculino de 22 años inconsciente. No existe diagnóstico confirmado.",
 
     decisions: [
 
-      Decision(
+      "ABC",
 
-        id: "LAB",
+      "LAB",
 
-        title: "Solicitar laboratorio",
+      "BACKPACK",
 
-        description: "Enviar muestras.",
+    ],
 
-        moneyCost: 300,
+  ),
 
-        trustChange: 15,
+  "PRIMARY": StoryNode(
 
-        result: "Se encontraron metabolitos de cocaína.",
+    id: "PRIMARY",
 
-        evidence: "Laboratorio positivo",
+    title: "Paciente estabilizado",
 
-        nextNode: "LAB",
+    description:
+    "La vía aérea está permeable y los signos vitales mejoran ligeramente.",
 
-      ),
+    decisions: [
 
-      Decision(
+      "LAB",
 
-        id: "QUESTION",
-
-        title: "Interrogar acompañante",
-
-        description: "Buscar antecedentes.",
-
-        moneyCost: 0,
-
-        trustChange: 10,
-
-        result: "Obtienes un alias.",
-
-        evidence: "Alias: El Mono",
-
-        nextNode: "WITNESS",
-
-      ),
-
-      Decision(
-
-        id: "TRATMENT",
-
-        title: "Administrar tratamiento",
-
-        description: "Intentar estabilizar.",
-
-        moneyCost: 500,
-
-        trustChange: 20,
-
-        result: "Paciente parcialmente estable.",
-
-        nextNode: "TREATMENT",
-
-      ),
+      "BACKPACK",
 
     ],
 
@@ -80,48 +46,52 @@ final Map<String, StoryNode> caseNodes = {
 
     id: "LAB",
 
-    title: "Resultados",
+    title: "Resultados de laboratorio",
 
     description:
-    "El laboratorio confirma cocaína.",
+    "Se detectan metabolitos compatibles con cocaína.",
 
     decisions: [
 
-      Decision(
+      "CONFIRM",
 
-        id: "ANALYSIS",
+      "BACKPACK",
 
-        title: "Solicitar análisis confirmatorio",
+    ],
 
-        description: "",
+  ),
 
-        moneyCost: 400,
+  "BACKPACK": StoryNode(
 
-        trustChange: 10,
+    id: "BACKPACK",
 
-        result: "Confirma alta pureza.",
+    title: "Pertenencias",
 
-        nextNode: "CONFIRM",
+    description:
+    "Encuentras un teléfono bloqueado y un ticket con una dirección.",
 
-      ),
+    decisions: [
 
-      Decision(
+      "LAB",
 
-        id: "SEARCH",
+      "ABC",
 
-        title: "Buscar proveedor",
+    ],
 
-        description: "",
+  ),
 
-        moneyCost: 300,
+  "CONFIRM": StoryNode(
 
-        trustChange: 15,
+    id: "CONFIRM",
 
-        result: "Encuentran una dirección.",
+    title: "Análisis confirmado",
 
-        nextNode: "HOUSE",
+    description:
+    "La sustancia contiene adulterantes desconocidos.",
 
-      ),
+    decisions: [
+
+      "BACKPACK",
 
     ],
 

@@ -1,3 +1,5 @@
+import '../data/decisions.dart';
+import '../models/decision_result.dart';
 import '../models/game_event.dart';
 import '../models/game_state.dart';
 import '../models/decision.dart';
@@ -6,6 +8,7 @@ import '../models/story_node.dart';
 import 'dart:math';
 
 import '../data/events.dart';
+import '../models/team.dart';
 
 class GameEngine {
 
@@ -15,14 +18,17 @@ class GameEngine {
 
   GameEngine(this.game);
 
-  String executeDecision(Decision decision) {
+  Team get currentTeam => game.teams[game.currentTurn];
+
+  StoryNode get currentNode => caseNodes[currentTeam.currentNode]!;
+
+  DecisionResult executeDecision(Decision decision) {
 
     final team = game.teams[game.currentTurn];
 
-    // Siempre se cobra el dinero
     team.money -= decision.moneyCost;
 
-    bool success =
+    final success =
         random.nextInt(100) < decision.successRate;
 
     if (success) {
@@ -31,28 +37,49 @@ class GameEngine {
 
       team.currentNode = decision.nextNode;
 
+      team.completedActions.add(decision.id);
+
       if (decision.evidence != null) {
         team.evidence.add(decision.evidence!);
       }
 
-      team.completedActions.add(decision.id);
+      final result = DecisionResult(
+
+        success: true,
+
+        title: "Acción completada",
+
+        message: decision.result,
+
+        evidence: decision.evidence,
+
+      );
 
       nextTurn();
 
-      return decision.result;
+      return result;
 
-    } else {
-
-      team.trust -= 10;
-
-      if (decision.failNode.isNotEmpty) {
-        team.currentNode = decision.failNode;
-      }
-
-      nextTurn();
-
-      return decision.failResult;
     }
+
+    if (decision.failNode.isNotEmpty) {
+      team.currentNode = decision.failNode;
+    }
+
+    team.trust -= 10;
+
+    final result = DecisionResult(
+
+      success: false,
+
+      title: "La situación se complica",
+
+      message: decision.failResult,
+
+    );
+
+    nextTurn();
+
+    return result;
 
   }
 
@@ -65,6 +92,16 @@ class GameEngine {
     }
 
     return randomEvents[random.nextInt(randomEvents.length)];
+
+  }
+
+  List<Decision> getAvailableDecisions() {
+
+    final node = getCurrentNode();
+
+    return node.decisions
+        .map((id) => decisions[id]!)
+        .toList();
 
   }
 

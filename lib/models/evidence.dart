@@ -1,6 +1,4 @@
-import 'decision.dart';
-
-class StoryNode {
+class Evidence {
 
   final String id;
 
@@ -8,9 +6,9 @@ class StoryNode {
 
   final String description;
 
-  final List<String> decisions;
+  final String? image;
 
-  const StoryNode({
+  const Evidence({
 
     required this.id,
 
@@ -18,7 +16,7 @@ class StoryNode {
 
     required this.description,
 
-    required this.decisions,
+    this.image,
 
   });
 

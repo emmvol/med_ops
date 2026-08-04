@@ -1,6 +1,4 @@
-import 'decision.dart';
-
-class StoryNode {
+class Scene {
 
   final String id;
 
@@ -8,9 +6,9 @@ class StoryNode {
 
   final String description;
 
-  final List<String> decisions;
+  final String node;
 
-  const StoryNode({
+  const Scene({
 
     required this.id,
 
@@ -18,7 +16,7 @@ class StoryNode {
 
     required this.description,
 
-    required this.decisions,
+    required this.node,
 
   });
 

@@ -1,3 +1,7 @@
+import 'package:flutter/material.dart';
+
+import 'decision_type.dart';
+
 class Decision {
 
   /// Identificador único
@@ -33,6 +37,12 @@ class Decision {
   /// Nodo al que avanza si falla
   final String failNode;
 
+  final IconData icon;
+
+  final DecisionType type;
+
+  final int duration;
+
   const Decision({
     required this.id,
     required this.title,
@@ -41,6 +51,10 @@ class Decision {
     required this.trustChange,
     required this.result,
     required this.nextNode,
+    required this.icon,
+    required this.type,
+
+    this.duration = 1,
 
     this.evidence,
 

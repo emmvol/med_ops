@@ -1,25 +1,41 @@
 class Team {
-  final String name;
+
+  /// Nombre elegido por el equipo
+  String name;
+
+  /// Alfa, Bravo, Charlie...
+  final String codeName;
+
+  /// Hospital al que pertenecen
+  String hospital;
 
   int money;
   int trust;
 
-  /// Nodo donde se encuentra actualmente este equipo
+  /// Nodo actual de este equipo
   String currentNode;
 
-  /// Evidencias encontradas
+  /// Evidencias descubiertas
   final List<String> evidence;
 
-  /// Decisiones ya tomadas (evita repetir acciones)
+  /// Acciones realizadas
   final Set<String> completedActions;
 
   Team({
+
     required this.name,
+    required this.codeName,
+    required this.hospital,
+
     this.money = 5000,
     this.trust = 100,
+
     this.currentNode = "START",
+
     List<String>? evidence,
     Set<String>? completedActions,
+
   })  : evidence = evidence ?? [],
         completedActions = completedActions ?? {};
+
 }
