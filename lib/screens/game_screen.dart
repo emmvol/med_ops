@@ -6,11 +6,20 @@ import '../models/patient.dart';
 import '../models/team.dart';
 
 import '../widgets/decision_card.dart';
+import '../widgets/evidence_panel.dart';
 import '../widgets/info_panel.dart';
+import '../widgets/patient_panel.dart';
 import '../widgets/result_dialog.dart';
+import '../widgets/team_dashboard.dart';
 
 class GameScreen extends StatefulWidget {
-  const GameScreen({super.key});
+
+  final List<Team> teams;
+
+  const GameScreen({
+    super.key,
+    required this.teams,
+  });
 
   @override
   State<GameScreen> createState() => _GameScreenState();
@@ -28,15 +37,7 @@ class _GameScreenState extends State<GameScreen> {
 
       GameState(
 
-        teams: [
-
-          Team(name: "Hospital Alfa"),
-
-          Team(name: "Hospital Bravo"),
-
-          Team(name: "Hospital Charlie"),
-
-        ],
+        teams: widget.teams,
 
         patient: Patient(),
 
@@ -60,89 +61,159 @@ class _GameScreenState extends State<GameScreen> {
 
       ),
 
-      body: Padding(
+        body: Padding(
 
-        padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(16),
 
-        child: Column(
+          child: Column(
 
-          crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
 
-          children: [
+              TeamDashboard(
 
-            Row(
+                teams: engine.game.teams,
 
-              children: [
+                currentTurn: engine.game.currentTurn,
 
-                Expanded(
+              ),
 
-                  child: InfoPanel(
+              const SizedBox(height: 16),
 
-                    title: "Equipo",
+              Expanded(
 
-                    value: team.name,
-
-                  ),
-
-                ),
-
-                const SizedBox(width: 12),
-
-                Expanded(
-
-                  child: InfoPanel(
-
-                    title: "Confianza",
-
-                    value: "${team.trust}",
-
-                  ),
-
-                ),
-
-                const SizedBox(width: 12),
-
-                Expanded(
-
-                  child: InfoPanel(
-
-                    title: "Fondos",
-
-                    value: "\$${team.money}",
-
-                  ),
-
-                ),
-
-              ],
-
-            ),
-
-            const SizedBox(height: 20),
-
-            Card(
-
-              child: Padding(
-
-                padding: const EdgeInsets.all(20),
-
-                child: Column(
-
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Row(
 
                   children: [
 
-                    Text(
+                    Expanded(
 
-                      node.title,
+                      flex: 3,
 
-                      style: Theme.of(context).textTheme.headlineSmall,
+                      child: Column(
+
+                        children: [
+
+                          Card(
+
+                            child: Padding(
+
+                              padding: const EdgeInsets.all(20),
+
+                              child: Column(
+
+                                crossAxisAlignment:
+                                CrossAxisAlignment.start,
+
+                                children: [
+
+                                  Text(
+
+                                    node.title,
+
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .headlineSmall,
+
+                                  ),
+
+                                  const SizedBox(height:12),
+
+                                  Text(node.description),
+
+                                ],
+
+                              ),
+
+                            ),
+
+                          ),
+
+                          const SizedBox(height:16),
+
+                          Expanded(
+
+                            child: ListView(
+
+                              children: engine
+                                  .getAvailableDecisions()
+
+                                  .map(
+
+                                    (decision)=>DecisionCard(
+
+                                  decision: decision,
+
+                                  onTap: () async{
+
+                                    final result =
+                                    engine.executeDecision(
+                                        decision);
+
+                                    await showDialog(
+
+                                      context: context,
+
+                                      builder: (_)=>ResultDialog(
+
+                                        result: result,
+
+                                      ),
+
+                                    );
+
+                                    setState((){});
+
+                                  },
+
+                                ),
+
+                              )
+
+                                  .toList(),
+
+                            ),
+
+                          ),
+
+                        ],
+
+                      ),
 
                     ),
 
-                    const SizedBox(height: 12),
+                    const SizedBox(width:16),
 
-                    Text(node.description),
+                    SizedBox(
+
+                      width: 320,
+
+                      child: Column(
+
+                        children: [
+
+                          PatientPanel(
+
+                            patient: engine.game.patient,
+
+                          ),
+
+                          const SizedBox(height:16),
+
+                          Expanded(
+
+                            child: EvidencePanel(
+
+                              teams: engine.game.teams,
+
+                            ),
+
+                          ),
+
+                        ],
+
+                      ),
+
+                    ),
 
                   ],
 
@@ -150,68 +221,11 @@ class _GameScreenState extends State<GameScreen> {
 
               ),
 
-            ),
+            ],
 
-            const SizedBox(height: 20),
-
-            Text(
-
-              "Decisiones",
-
-              style: Theme.of(context).textTheme.titleLarge,
-
-            ),
-
-            const SizedBox(height: 10),
-
-            Expanded(
-
-              child: ListView.builder(
-
-                itemCount: engine.getAvailableDecisions().length,
-
-                itemBuilder: (_, index){
-
-                  final decision = engine.getAvailableDecisions()[index];
-
-                  return DecisionCard(
-
-                    decision: decision,
-
-                    onTap: () async{
-
-                      final result =
-                      engine.executeDecision(decision);
-
-                      await showDialog(
-
-                        context: context,
-
-                        builder: (_) => ResultDialog(
-
-                          result: result,
-
-                        ),
-
-                      );
-
-                      setState((){});
-
-                    },
-
-                  );
-
-                },
-
-              ),
-
-            ),
-
-          ],
+          ),
 
         ),
-
-      ),
 
     );
 

@@ -23,7 +23,7 @@ class TeamDashboard extends StatelessWidget {
 
     return SizedBox(
 
-      height: 130,
+      height: 145,
 
       child: ListView.builder(
 
@@ -47,9 +47,27 @@ class TeamDashboard extends StatelessWidget {
 
               color: active
 
-                  ? Colors.red.shade900
+                  ? Theme.of(context).colorScheme.primaryContainer
 
-                  : null,
+                  : Theme.of(context).cardColor,
+
+              shape: RoundedRectangleBorder(
+
+                borderRadius: BorderRadius.circular(14),
+
+                side: BorderSide(
+
+                  color: active
+
+                      ? Colors.green
+
+                      : Colors.transparent,
+
+                  width: 3,
+
+                ),
+
+              ),
 
               child: Padding(
 

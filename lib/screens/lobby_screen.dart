@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/team.dart';
-import 'game_screen.dart';
+import 'intro_screen.dart';
 
 class LobbyScreen extends StatefulWidget {
 
@@ -157,29 +157,29 @@ class _LobbyScreenState extends State<LobbyScreen> {
 
               MaterialPageRoute(
 
-                builder: (_)=>GameScreen(
+                  builder: (_) => IntroScreen(
 
-                  teams: List.generate(
+                    teams: List.generate(
 
-                    names.length,
+                      names.length,
 
-                        (i)=>Team(
+                          (i) => Team(
 
-                      name: names[i].text.isEmpty
+                        name: names[i].text.isEmpty
+                            ? "Equipo ${aliases[i]}"
+                            : names[i].text,
 
-                          ? aliases[i]
+                        hospital: hospitals[i].text.isEmpty
+                            ? "Hospital General"
+                            : hospitals[i].text,
 
-                          : names[i].text,
+                        codeName: aliases[i],
 
-                      hospital: hospitals[i].text,
-
-                      codeName: aliases[i],
+                      ),
 
                     ),
 
                   ),
-
-                ),
 
               ),
 

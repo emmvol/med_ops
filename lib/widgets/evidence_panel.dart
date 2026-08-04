@@ -53,17 +53,25 @@ class EvidencePanel extends StatelessWidget {
 
                   return team.evidence.map(
 
-                        (e)=>ListTile(
+                        (e)=>Card(
 
-                      dense: true,
+                          margin: const EdgeInsets.only(bottom:8),
 
-                      leading: const Icon(Icons.folder),
+                          child: ListTile(
 
-                      title: Text(e),
+                            leading: const Icon(Icons.folder),
 
-                      subtitle: Text(team.codeName),
+                            title: Text(e),
 
-                    ),
+                            subtitle: Text(
+
+                              "${team.codeName} • ${team.hospital}",
+
+                            ),
+
+                          ),
+
+                        )
 
                   );
 

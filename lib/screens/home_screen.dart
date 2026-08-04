@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../data/campaigns.dart';
 import 'intro_screen.dart';
+import 'lobby_screen.dart';
 
 class HomeScreen extends StatelessWidget {
 
@@ -71,7 +72,7 @@ class HomeScreen extends StatelessWidget {
 
                       MaterialPageRoute(
 
-                        builder: (_) => const IntroScreen(),
+                          builder: (_) => const LobbyScreen(),
 
                       ),
 

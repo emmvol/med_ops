@@ -1,3 +1,5 @@
+import 'package:med_ops/models/round_manager.dart';
+
 import 'team.dart';
 import 'patient.dart';
 
@@ -11,6 +13,11 @@ class GameState {
 
   int round;
 
+  /// Acciones ya realizadas sobre el caso
+  final Set<String> completedActions;
+
+  final RoundManager roundManager;
+
   GameState({
 
     required this.teams,
@@ -21,6 +28,12 @@ class GameState {
 
     this.round = 1,
 
-  });
+    Set<String>? completedActions,
+
+    RoundManager? roundManager,
+
+  }) :
+  completedActions = completedActions ?? {},
+        roundManager = roundManager ?? RoundManager();
 
 }

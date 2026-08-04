@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 
 import '../data/campaigns.dart';
+import '../models/team.dart';
 import 'game_screen.dart';
 
 class IntroScreen extends StatefulWidget {
 
-  const IntroScreen({super.key});
+  final List<Team> teams;
+
+  const IntroScreen({
+    super.key,
+    required this.teams,
+  });
 
   @override
   State<IntroScreen> createState() => _IntroScreenState();
@@ -81,7 +87,11 @@ class _IntroScreenState extends State<IntroScreen> {
 
                     MaterialPageRoute(
 
-                      builder: (_) => const GameScreen(),
+                      builder: (_) => GameScreen(
+
+                        teams: widget.teams,
+
+                      ),
 
                     ),
 

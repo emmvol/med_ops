@@ -18,9 +18,6 @@ class Team {
   /// Evidencias descubiertas
   final List<String> evidence;
 
-  /// Acciones realizadas
-  final Set<String> completedActions;
-
   Team({
 
     required this.name,
@@ -33,9 +30,7 @@ class Team {
     this.currentNode = "START",
 
     List<String>? evidence,
-    Set<String>? completedActions,
 
-  })  : evidence = evidence ?? [],
-        completedActions = completedActions ?? {};
+  })  : evidence = evidence ?? [];
 
 }
