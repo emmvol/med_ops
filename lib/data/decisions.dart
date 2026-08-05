@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/decision.dart';
 import '../models/decision_type.dart';
+import '../models/location.dart';
 
 final Map<String, Decision> decisions = {
 
@@ -33,6 +34,8 @@ final Map<String, Decision> decisions = {
 
     failNode: "START",
 
+    location: Location.hospital,
+
   ),
 
   "LAB": Decision(
@@ -61,6 +64,8 @@ final Map<String, Decision> decisions = {
 
     successRate: 100,
 
+    location: Location.hospital,
+
   ),
 
   "BACKPACK": Decision(
@@ -88,6 +93,15 @@ final Map<String, Decision> decisions = {
     nextNode: "BACKPACK",
 
     successRate: 100,
+
+    location: Location.hospital,
+
+    onSuccess: (game) {
+
+      game.flags.foundPhone = true;
+      game.flags.raveDiscovered = true;
+
+    },
 
   ),
 
@@ -121,6 +135,8 @@ final Map<String, Decision> decisions = {
 
     failNode: "LAB",
 
+    location: Location.hospital,
+
   ),
 
   "VITALS": Decision(
@@ -134,6 +150,7 @@ final Map<String, Decision> decisions = {
     trustChange: 5,
     result: "Se detecta taquicardia, hipertensión y midriasis.",
     nextNode: "VITALS",
+    location: Location.hospital,
   ),
 
   "GLUCOSE": Decision(
@@ -147,6 +164,7 @@ final Map<String, Decision> decisions = {
     trustChange: 5,
     result: "La glucosa se encuentra dentro de parámetros normales.",
     nextNode: "PRIMARY",
+    location: Location.hospital,
   ),
 
   "ECG": Decision(
@@ -160,6 +178,7 @@ final Map<String, Decision> decisions = {
     trustChange: 8,
     result: "El ECG muestra taquicardia sinusal.",
     nextNode: "ECG",
+    location: Location.hospital,
   ),
 
   "SEARCH_BODY": Decision(
@@ -174,6 +193,7 @@ final Map<String, Decision> decisions = {
     result: "Encuentras un encendedor, dinero y una pulsera fluorescente.",
     evidence: "Pulsera del rave",
     nextNode: "BODY_SEARCH",
+    location: Location.hospital,
   ),
 
   "QUESTION_PARAMEDICS": Decision(
@@ -187,6 +207,7 @@ final Map<String, Decision> decisions = {
     trustChange: 6,
     result: "Mencionan que había otras tres víctimas en la misma zona.",
     nextNode: "PARAMEDICS",
+    location: Location.hospital,
   ),
 
   "CALL_POLICE": Decision(
@@ -200,6 +221,14 @@ final Map<String, Decision> decisions = {
     trustChange: 10,
     result: "La policía abre colaboración con el hospital.",
     nextNode: "POLICE",
+    location: Location.hospital,
+
+    onSuccess: (game) {
+
+      game.flags.policeCalled = true;
+      game.flags.policeTrust = true;
+
+    },
   ),
 
   "OBSERVE": Decision(
@@ -213,6 +242,7 @@ final Map<String, Decision> decisions = {
     trustChange: -2,
     result: "El paciente permanece estable durante algunos minutos.",
     nextNode: "PRIMARY",
+    location: Location.hospital,
   ),
 
 };

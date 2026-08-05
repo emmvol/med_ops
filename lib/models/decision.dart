@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'decision_type.dart';
+import 'game_state.dart';
+import 'location.dart';
 
 class Decision {
 
@@ -45,6 +47,14 @@ class Decision {
 
   final int apCost;
 
+  final Location location;
+
+  final bool Function(GameState game)? condition;
+
+  final void Function(GameState game)? onSuccess;
+
+  final void Function(GameState game)? onFail;
+
   const Decision({
     required this.id,
     required this.title,
@@ -55,6 +65,7 @@ class Decision {
     required this.nextNode,
     required this.icon,
     required this.type,
+    required this.location,
 
     this.evidence,
 
@@ -67,6 +78,18 @@ class Decision {
     this.unique = true,
 
     this.apCost = 1,
+
+    this.condition,
+
+    this.onSuccess,
+
+    this.onFail,
   });
+
+  bool isAvailable(GameState game){
+
+    return condition?.call(game) ?? true;
+
+  }
 
 }

@@ -63,14 +63,7 @@ class GameEngine {
         team.evidence.add(decision.evidence!);
       }
 
-      if (decision.id == 'CALL_POLICE') {
-        game.flags.policeCalled = true;
-        game.flags.policeTrust = true;
-      }
-
-      if (decision.id == 'BACKPACK') {
-        game.flags.raveDiscovered = true;
-      }
+      decision.onSuccess?.call(game);
 
       return DecisionResult(
 
@@ -91,6 +84,8 @@ class GameEngine {
     }
 
     team.trust -= 10;
+
+    decision.onFail?.call(game);
 
     return DecisionResult(
 
@@ -171,15 +166,21 @@ class GameEngine {
     final node = currentNode;
 
     return node.decisions
-
         .map((id) => decisions[id]!)
+        .where((decision) {
 
-        .where(
-          (decision) =>
-      !decision.unique ||
-          !game.completedActions.contains(decision.id),
-    )
+      if (decision.location != currentTeam.location) {
+        return false;
+      }
 
+      if (decision.unique &&
+          game.completedActions.contains(decision.id)) {
+        return false;
+      }
+
+      return decision.isAvailable(game);
+
+    })
         .toList();
 
   }
