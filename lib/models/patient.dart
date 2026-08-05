@@ -7,6 +7,8 @@ enum PatientStatus {
 
 class Patient {
 
+  int stability = 70;
+
   PatientStatus status;
 
   Patient({

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../engine/game_engine.dart';
 import '../models/game_state.dart';
+import '../models/location.dart';
 import '../models/patient.dart';
 import '../models/team.dart';
 
@@ -78,6 +79,8 @@ class _GameScreenState extends State<GameScreen> {
 
                 title: node.title,
 
+                location: team.location.label,
+
               ),
 
               const SizedBox(height: 12),
@@ -91,6 +94,42 @@ class _GameScreenState extends State<GameScreen> {
               ),
 
               const SizedBox(height: 16),
+
+              Align(
+                alignment: Alignment.centerRight,
+                child: OutlinedButton.icon(
+                  icon: const Icon(Icons.map),
+                  label: const Text('Viajar'),
+                  onPressed: () async {
+                    final location = await showDialog<Location>(
+                      context: context,
+                      builder: (_) => AlertDialog(
+                        title: const Text('Seleccionar ubicación'),
+                        content: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: engine
+                              .getAvailableLocations()
+                              .map(
+                                (loc) => ListTile(
+                              leading: const Icon(Icons.place),
+                              title: Text(loc.label),
+                              onTap: () => Navigator.pop(context, loc),
+                            ),
+                          )
+                              .toList(),
+                        ),
+                      ),
+                    );
+
+                    if (location != null) {
+                      engine.travelTo(location);
+                      setState(() {});
+                    }
+                  },
+                ),
+              ),
+
+              const SizedBox(height: 12),
 
               Expanded(
 
@@ -298,7 +337,7 @@ class _GameScreenState extends State<GameScreen> {
                       child: Column(
 
                         children: [
-
+                          if(team.location == Location.hospital)
                           PatientPanel(
 
                             patient: engine.game.patient,

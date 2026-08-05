@@ -1,31 +1,41 @@
 class GameFlags {
 
+  // PACIENTE
+
   bool patientStable = false;
-
-  bool policeTrust = false;
-
-  bool foundPhone = false;
-
-  bool knowsAlias = false;
-
-  bool labConfirmed = false;
 
   bool patientAwake = false;
 
-  bool policeCalled = false;
+  bool patientDead = false;
+
+  // INVESTIGACIÓN
+
+  bool foundPhone = false;
 
   bool phoneTracked = false;
 
-  bool warehouseUnlocked = false;
+  bool knowsAlias = false;
 
   bool raveDiscovered = false;
 
-  bool autopsyUnlocked = false;
+  bool warehouseUnlocked = false;
 
-  bool familyInterviewed = false;
+  bool laboratoryCompleted = false;
+
+  bool labConfirmed = false;
+
+  // POLICÍA
+
+  bool policeCalled = false;
+
+  bool policeTrust = false;
+
+  // ESCENARIOS
 
   bool crimeSceneVisited = false;
 
-  bool laboratoryCompleted = false;
+  bool familyInterviewed = false;
+
+  bool autopsyUnlocked = false;
 
 }

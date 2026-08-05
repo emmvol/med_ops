@@ -4,4 +4,5 @@ enum DecisionType {
   legal,
   communication,
   financial,
+  interview,
 }

@@ -10,6 +10,8 @@ class CaseHeader extends StatelessWidget {
 
   final String title;
 
+  final String location;
+
   const CaseHeader({
 
     super.key,
@@ -19,6 +21,8 @@ class CaseHeader extends StatelessWidget {
     required this.currentTeam,
 
     required this.title,
+
+    required this.location,
 
   });
 
@@ -71,6 +75,8 @@ class CaseHeader extends StatelessWidget {
                   Text(
                     "Turno: ${currentTeam.codeName} • ${currentTeam.name}",
                   ),
+
+                  Text('Ubicación: $location'),
 
                 ],
 

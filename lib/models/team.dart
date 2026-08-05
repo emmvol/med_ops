@@ -1,3 +1,5 @@
+import 'location.dart';
+
 class Team {
 
   /// Nombre elegido por el equipo
@@ -20,6 +22,8 @@ class Team {
 
   int actionPoints;
 
+  Location location;
+
   Team({
 
     required this.name,
@@ -34,6 +38,8 @@ class Team {
     List<String>? evidence,
 
     this.actionPoints = 3,
+
+    this.location = Location.hospital,
 
   })  : evidence = evidence ?? [];
 

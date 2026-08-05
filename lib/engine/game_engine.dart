@@ -4,11 +4,13 @@ import '../models/game_event.dart';
 import '../models/game_state.dart';
 import '../models/decision.dart';
 import '../data/sample_case.dart';
+import '../models/location.dart';
 import '../models/story_node.dart';
 import 'dart:math';
 
 import '../data/events.dart';
 import '../models/team.dart';
+import '../services/location_manager.dart';
 
 class GameEngine {
 
@@ -59,6 +61,15 @@ class GameEngine {
 
       if (decision.evidence != null) {
         team.evidence.add(decision.evidence!);
+      }
+
+      if (decision.id == 'CALL_POLICE') {
+        game.flags.policeCalled = true;
+        game.flags.policeTrust = true;
+      }
+
+      if (decision.id == 'BACKPACK') {
+        game.flags.raveDiscovered = true;
       }
 
       return DecisionResult(
@@ -170,6 +181,45 @@ class GameEngine {
     )
 
         .toList();
+
+  }
+
+  List<Location> getAvailableLocations() {
+    return LocationManager.availableLocations(game.flags);
+  }
+
+  void travelTo(Location location) {
+
+    if(currentTeam.actionPoints <= 0){
+      return;
+    }
+
+    currentTeam.actionPoints--;
+
+    currentTeam.location = location;
+
+    switch(location){
+
+      case Location.hospital:
+        currentTeam.currentNode = "START";
+        break;
+
+      case Location.police:
+        currentTeam.currentNode = "POLICE_HQ";
+        break;
+
+      case Location.crimeScene:
+        currentTeam.currentNode = "CRIME_SCENE";
+        break;
+
+      case Location.raveHouse:
+        currentTeam.currentNode = "RAVE_HOUSE";
+        break;
+
+      case Location.warehouse:
+        currentTeam.currentNode = "WAREHOUSE_ENTRY";
+        break;
+    }
 
   }
 
