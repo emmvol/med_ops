@@ -23,7 +23,8 @@ class GameEngine {
   Team get currentTeam =>
       game.teams[game.roundManager.currentTeam];
 
-  StoryNode get currentNode => caseNodes[currentTeam.currentNode]!;
+  StoryNode get currentNode =>
+      caseNodes["EXPEDIENTE_${game.currentExpediente}"]!;
 
   DecisionResult executeDecision(Decision decision) {
 
@@ -32,68 +33,62 @@ class GameEngine {
     if (team.actionPoints < decision.apCost) {
 
       return const DecisionResult(
-
         success: false,
-
         title: "Sin acciones",
-
         message: "No quedan suficientes puntos de acción.",
-
       );
 
     }
 
     team.actionPoints -= decision.apCost;
-
     team.money -= decision.moneyCost;
 
-    final success = random.nextInt(100) < decision.successRate;
+    final success =
+        random.nextInt(100) < decision.successRate;
 
     if (success) {
 
       team.trust += decision.trustChange;
 
-      team.currentNode = decision.nextNode;
+      if (decision.repeat == DecisionRepeat.once) {
 
-      if (decision.unique) {
         game.completedActions.add(decision.id);
+
       }
 
       if (decision.evidence != null) {
+
         team.evidence.add(decision.evidence!);
+
       }
 
       decision.onSuccess?.call(game);
 
-      return DecisionResult(
+    } else {
 
-        success: true,
+      team.trust -= 10;
 
-        title: "Acción completada",
-
-        message: decision.result,
-
-        evidence: decision.evidence,
-
-      );
+      decision.onFail?.call(game);
 
     }
 
-    if (decision.failNode.isNotEmpty) {
-      team.currentNode = decision.failNode;
-    }
-
-    team.trust -= 10;
-
-    decision.onFail?.call(game);
+    checkStoryProgress();
 
     return DecisionResult(
 
-      success: false,
+      success: success,
 
-      title: "La situación se complica",
+      title: success
+          ? "Acción completada"
+          : "Acción fallida",
 
-      message: decision.failResult,
+      message: success
+          ? decision.result
+          : decision.failResult,
+
+      evidence: success
+          ? decision.evidence
+          : null,
 
     );
 
@@ -163,25 +158,26 @@ class GameEngine {
 
   List<Decision> getAvailableDecisions() {
 
-    final node = currentNode;
+    return decisions.values.where((decision){
 
-    return node.decisions
-        .map((id) => decisions[id]!)
-        .where((decision) {
-
-      if (decision.location != currentTeam.location) {
+      if(decision.location != currentTeam.location){
         return false;
       }
 
-      if (decision.unique &&
-          game.completedActions.contains(decision.id)) {
+      if(decision.expediente > game.currentExpediente){
+        return false;
+      }
+
+      if(
+      decision.repeat == DecisionRepeat.once &&
+          game.completedActions.contains(decision.id)
+      ){
         return false;
       }
 
       return decision.isAvailable(game);
 
-    })
-        .toList();
+    }).toList();
 
   }
 
@@ -189,38 +185,31 @@ class GameEngine {
     return LocationManager.availableLocations(game.flags);
   }
 
-  void travelTo(Location location) {
+  DecisionResult travelTo(Location location){
 
     if(currentTeam.actionPoints <= 0){
-      return;
+
+      return const DecisionResult(
+        success: false,
+        title: "Sin acciones",
+        message: "No quedan suficientes puntos de acción.",
+      );
+
     }
 
     currentTeam.actionPoints--;
 
     currentTeam.location = location;
 
-    switch(location){
+    return DecisionResult(
 
-      case Location.hospital:
-        currentTeam.currentNode = "START";
-        break;
+      success: true,
 
-      case Location.police:
-        currentTeam.currentNode = "POLICE_HQ";
-        break;
+      title: location.label,
 
-      case Location.crimeScene:
-        currentTeam.currentNode = "CRIME_SCENE";
-        break;
+      message: location.description,
 
-      case Location.raveHouse:
-        currentTeam.currentNode = "RAVE_HOUSE";
-        break;
-
-      case Location.warehouse:
-        currentTeam.currentNode = "WAREHOUSE_ENTRY";
-        break;
-    }
+    );
 
   }
 
@@ -238,5 +227,74 @@ class GameEngine {
     currentTeam.actionPoints = 3;
 
     nextTurn();
+  }
+
+  void checkStoryProgress() {
+
+    switch (game.currentExpediente) {
+
+      case 1:
+
+        if (
+
+        game.flags.patientStable &&
+            game.flags.labConfirmed &&
+            game.flags.policeCalled &&
+            game.flags.foundPhone
+
+        ) {
+
+          game.currentExpediente = 2;
+
+        }
+
+        break;
+
+      case 2:
+
+        if (
+
+        game.flags.phoneTracked &&
+            game.flags.raveDiscovered
+
+        ) {
+
+          game.currentExpediente = 3;
+
+        }
+
+        break;
+
+      case 3:
+
+        if (
+
+        game.flags.crimeSceneVisited &&
+            game.flags.familyInterviewed
+
+        ) {
+
+          game.currentExpediente = 4;
+
+        }
+
+        break;
+
+      case 4:
+
+        if (
+
+        game.flags.warehouseUnlocked
+
+        ) {
+
+          game.currentExpediente = 5;
+
+        }
+
+        break;
+
+    }
+
   }
 }

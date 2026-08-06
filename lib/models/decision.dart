@@ -4,50 +4,44 @@ import 'decision_type.dart';
 import 'game_state.dart';
 import 'location.dart';
 
+enum DecisionRepeat {
+
+  once,
+  repeatable,
+
+}
+
 class Decision {
 
-  /// Identificador único
   final String id;
 
-  /// Nombre mostrado al jugador
   final String title;
 
-  /// Descripción corta
   final String description;
-
-  /// Costo en dinero
-  final int moneyCost;
-
-  /// Cambio de confianza si tiene éxito
-  final int trustChange;
-
-  /// Resultado mostrado si sale bien
-  final String result;
-
-  /// Evidencia obtenida (opcional)
-  final String? evidence;
-
-  /// Nodo al que avanza si sale bien
-  final String nextNode;
-
-  /// Probabilidad de éxito (0-100)
-  final int successRate;
-
-  /// Resultado si falla
-  final String failResult;
-
-  /// Nodo al que avanza si falla
-  final String failNode;
 
   final IconData icon;
 
   final DecisionType type;
 
-  final bool unique;
+  final Location location;
+
+  final int expediente;
+
+  final DecisionRepeat repeat;
 
   final int apCost;
 
-  final Location location;
+  final int moneyCost;
+
+  final int trustChange;
+
+  final int successRate;
+
+  final String result;
+
+  final String failResult;
+
+  final String? evidence;
 
   final bool Function(GameState game)? condition;
 
@@ -56,34 +50,40 @@ class Decision {
   final void Function(GameState game)? onFail;
 
   const Decision({
+
     required this.id,
     required this.title,
     required this.description,
-    required this.moneyCost,
-    required this.trustChange,
-    required this.result,
-    required this.nextNode,
+
     required this.icon,
     required this.type,
+
     required this.location,
 
-    this.evidence,
+    required this.expediente,
 
-    this.successRate = 100,
+    this.repeat = DecisionRepeat.once,
+
+    this.apCost = 1,
+
+    required this.moneyCost,
+
+    required this.trustChange,
+
+    required this.result,
 
     this.failResult = "",
 
-    this.failNode = "",
+    this.successRate = 100,
 
-    this.unique = true,
-
-    this.apCost = 1,
+    this.evidence,
 
     this.condition,
 
     this.onSuccess,
 
     this.onFail,
+
   });
 
   bool isAvailable(GameState game){

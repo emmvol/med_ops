@@ -26,13 +26,9 @@ final Map<String, Decision> decisions = {
 
     result: "La vía aérea queda asegurada y el paciente mejora parcialmente.",
 
-    nextNode: "PRIMARY",
-
     successRate: 95,
 
     failResult: "La estabilización fue insuficiente.",
-
-    failNode: "START",
 
     location: Location.hospital,
 
@@ -59,8 +55,6 @@ final Map<String, Decision> decisions = {
     result: "El laboratorio detecta metabolitos compatibles con cocaína.",
 
     evidence: "Laboratorio positivo",
-
-    nextNode: "LAB",
 
     successRate: 100,
 
@@ -89,8 +83,6 @@ final Map<String, Decision> decisions = {
     result: "Encuentras un teléfono celular y un ticket.",
 
     evidence: "Teléfono celular",
-
-    nextNode: "BACKPACK",
 
     successRate: 100,
 
@@ -127,13 +119,9 @@ final Map<String, Decision> decisions = {
 
     evidence: "Informe confirmatorio",
 
-    nextNode: "CONFIRM",
-
     successRate: 95,
 
     failResult: "La muestra fue insuficiente para confirmar el resultado.",
-
-    failNode: "LAB",
 
     location: Location.hospital,
 
@@ -149,7 +137,6 @@ final Map<String, Decision> decisions = {
     moneyCost: 0,
     trustChange: 5,
     result: "Se detecta taquicardia, hipertensión y midriasis.",
-    nextNode: "VITALS",
     location: Location.hospital,
   ),
 
@@ -163,7 +150,6 @@ final Map<String, Decision> decisions = {
     moneyCost: 50,
     trustChange: 5,
     result: "La glucosa se encuentra dentro de parámetros normales.",
-    nextNode: "PRIMARY",
     location: Location.hospital,
   ),
 
@@ -177,7 +163,6 @@ final Map<String, Decision> decisions = {
     moneyCost: 250,
     trustChange: 8,
     result: "El ECG muestra taquicardia sinusal.",
-    nextNode: "ECG",
     location: Location.hospital,
   ),
 
@@ -192,7 +177,6 @@ final Map<String, Decision> decisions = {
     trustChange: 4,
     result: "Encuentras un encendedor, dinero y una pulsera fluorescente.",
     evidence: "Pulsera del rave",
-    nextNode: "BODY_SEARCH",
     location: Location.hospital,
   ),
 
@@ -206,7 +190,6 @@ final Map<String, Decision> decisions = {
     moneyCost: 0,
     trustChange: 6,
     result: "Mencionan que había otras tres víctimas en la misma zona.",
-    nextNode: "PARAMEDICS",
     location: Location.hospital,
   ),
 
@@ -220,7 +203,6 @@ final Map<String, Decision> decisions = {
     moneyCost: 0,
     trustChange: 10,
     result: "La policía abre colaboración con el hospital.",
-    nextNode: "POLICE",
     location: Location.hospital,
 
     onSuccess: (game) {
@@ -241,7 +223,6 @@ final Map<String, Decision> decisions = {
     moneyCost: 0,
     trustChange: -2,
     result: "El paciente permanece estable durante algunos minutos.",
-    nextNode: "PRIMARY",
     location: Location.hospital,
   ),
 

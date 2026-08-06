@@ -17,6 +17,8 @@ class GameState {
 
   final GameFlags flags;
 
+  int currentExpediente = 1;
+
   GameState({
 
     required this.teams,

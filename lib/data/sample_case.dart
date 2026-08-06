@@ -2,152 +2,59 @@ import '../models/story_node.dart';
 
 final Map<String, StoryNode> caseNodes = {
 
-  "START": StoryNode(
-    id: "START",
-    title: "Ingreso a Urgencias",
+  "EXPEDIENTE_1": StoryNode(
+
+    id: "EXPEDIENTE_1",
+    expediente: 1,
+    title: "Expediente 1 • Paciente Índice",
+
     description:
-    "Paciente masculino de 22 años encontrado inconsciente tras un operativo en San Pachuca.",
-    decisions: [
-      "ABC",
-      "VITALS",
-      "QUESTION_PARAMEDICS",
-      "SEARCH_BODY",
-      "BACKPACK",
-      "OBSERVE",
-    ],
+    "Un paciente masculino de 22 años permanece inconsciente tras un operativo policial. Todo indica que podría conocer el origen de la nueva droga denominada provisionalmente 'Quimera'.",
+
   ),
 
-  "PRIMARY": StoryNode(
-    id: "PRIMARY",
-    title: "Paciente estabilizado",
+  "EXPEDIENTE_2": StoryNode(
+
+    id: "EXPEDIENTE_2",
+    expediente: 2,
+    title: "Expediente 2 • Investigación Policial",
+
     description:
-    "La vía aérea se encuentra protegida. El paciente continúa inconsciente.",
-    decisions: [
-      "LAB",
-      "GLUCOSE",
-      "ECG",
-      "CALL_POLICE",
-      "BACKPACK",
-    ],
+    "Las primeras evidencias permiten iniciar una investigación formal con la policía. Es momento de identificar personas, rutas y posibles responsables.",
+
   ),
 
-  "VITALS": StoryNode(
-    id: "VITALS",
-    title: "Valoración clínica",
+  "EXPEDIENTE_3": StoryNode(
+
+    id: "EXPEDIENTE_3",
+    expediente: 3,
+    title: "Expediente 3 • Casa del Rave",
+
     description:
-    "Midriasis bilateral, TA elevada, FC 132 lpm, temperatura 38.5°C.",
-    decisions: [
-      "ABC",
-      "LAB",
-      "GLUCOSE",
-    ],
+    "El lugar donde comenzó el brote permanece parcialmente asegurado. Existen víctimas, evidencia física y múltiples indicios toxicológicos.",
+
   ),
 
-  "BODY_SEARCH": StoryNode(
-    id: "BODY_SEARCH",
-    title: "Exploración física",
+  "EXPEDIENTE_4": StoryNode(
+
+    id: "EXPEDIENTE_4",
+    expediente: 4,
+    title: "Expediente 4 • Reconstrucción",
+
     description:
-    "No existen lesiones importantes. Encuentras una pulsera fluorescente utilizada para ingresar a un rave.",
-    decisions: [
-      "CALL_POLICE",
-      "LAB",
-      "BACKPACK",
-    ],
+    "La investigación integra evidencia clínica, criminalística y médico-legal para reconstruir la distribución de Quimera.",
+
   ),
 
-  "PARAMEDICS": StoryNode(
-    id: "PARAMEDICS",
-    title: "Información prehospitalaria",
-    description:
-    "Los paramédicos informan que otras tres personas presentaban síntomas diferentes.",
-    decisions: [
-      "CALL_POLICE",
-      "LAB",
-    ],
-  ),
+  "EXPEDIENTE_5": StoryNode(
 
-  "LAB": StoryNode(
-    id: "LAB",
-    title: "Resultados preliminares",
-    description:
-    "El tamiz toxicológico detecta cocaína, pero algunos datos clínicos no coinciden.",
-    decisions: [
-      "CONFIRM",
-      "CALL_POLICE",
-      "BACKPACK",
-    ],
-  ),
+    id: "EXPEDIENTE_5",
+    expediente: 5,
+    title: "Expediente 5 • Warehouse",
 
-  "ECG": StoryNode(
-    id: "ECG",
-    title: "Electrocardiograma",
     description:
-    "Taquicardia sinusal sin otras alteraciones relevantes.",
-    decisions: [
-      "LAB",
-      "CONFIRM",
-    ],
-  ),
+    "Las piezas finalmente conducen al centro de distribución. El desenlace dependerá de toda la evidencia reunida durante la campaña.",
 
-  "POLICE": StoryNode(
-    id: "POLICE",
-    title: "Coordinación policial",
-    description:
-    "La policía confirma que el paciente podría conocer a los distribuidores.",
-    decisions: [
-      "CONFIRM",
-    ],
-  ),
-
-  "BACKPACK": StoryNode(
-    id: "BACKPACK",
-    title: "Pertenencias",
-    description:
-    "Dentro de la mochila encuentras un teléfono bloqueado y un ticket de acceso a una fiesta clandestina.",
-    decisions: [
-      "CALL_POLICE",
-      "LAB",
-    ],
-  ),
-
-  "CONFIRM": StoryNode(
-    id: "CONFIRM",
-    title: "Informe especializado",
-    description:
-    "El laboratorio concluye que existen varias sustancias mezcladas y la cocaína no explica todo el cuadro clínico.",
-    decisions: [],
-  ),
-
-  'POLICE_HQ': StoryNode(
-    id: 'POLICE_HQ',
-    title: 'Comandancia',
-    description:
-    'La policía de San Pachuca espera la información obtenida por los hospitales.',
-    decisions: [],
-  ),
-
-  'CRIME_SCENE': StoryNode(
-    id: 'CRIME_SCENE',
-    title: 'Escena del crimen',
-    description:
-    'La calle donde fueron encontrados varios intoxicados permanece acordonada.',
-    decisions: [],
-  ),
-
-  'RAVE_HOUSE': StoryNode(
-    id: 'RAVE_HOUSE',
-    title: 'Casa del rave',
-    description:
-    'La vivienda aún contiene vasos, envoltorios y restos de sustancias.',
-    decisions: [],
-  ),
-
-  'WAREHOUSE_ENTRY': StoryNode(
-    id: 'WAREHOUSE_ENTRY',
-    title: 'Almacén',
-    description:
-    'Un almacén abandonado en la periferia de San Pachuca parece ser el centro de distribución.',
-    decisions: [],
   ),
 
 };

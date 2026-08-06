@@ -12,6 +12,8 @@ class CaseHeader extends StatelessWidget {
 
   final String location;
 
+  final int expediente;
+
   const CaseHeader({
 
     super.key,
@@ -23,6 +25,8 @@ class CaseHeader extends StatelessWidget {
     required this.title,
 
     required this.location,
+
+    required this.expediente,
 
   });
 
@@ -66,6 +70,11 @@ class CaseHeader extends StatelessWidget {
 
                     ),
 
+                  ),
+
+                  Text(
+                    "Expediente $expediente",
+                    style: Theme.of(context).textTheme.labelLarge,
                   ),
 
                   Text(title),

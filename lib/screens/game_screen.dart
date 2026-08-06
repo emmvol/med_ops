@@ -77,6 +77,8 @@ class _GameScreenState extends State<GameScreen> {
 
                 currentTeam: engine.currentTeam,
 
+                expediente: node.expediente,
+
                 title: node.title,
 
                 location: team.location.label,
@@ -122,8 +124,22 @@ class _GameScreenState extends State<GameScreen> {
                     );
 
                     if (location != null) {
-                      engine.travelTo(location);
+
+                      final result = engine.travelTo(location);
+
+                      if (mounted) {
+
+                        await showDialog(
+                          context: context,
+                          builder: (_) => ResultDialog(
+                            result: result,
+                          ),
+                        );
+
+                      }
+
                       setState(() {});
+
                     }
                   },
                 ),
