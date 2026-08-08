@@ -28,7 +28,7 @@ class GameEngine {
       game.teams[game.roundManager.currentTeam];
 
   StoryNode get currentNode =>
-      caseNodes["EXPEDIENTE_${game.currentExpediente}"]!;
+      caseNodes[game.currentNodeId]!;
 
   // ============================================================
   // DECISIONES
@@ -108,11 +108,19 @@ class GameEngine {
 
       decision.onSuccess?.call(game);
 
+      if (decision.nextNode != null) {
+        game.currentNodeId = decision.nextNode!;
+      }
+
     } else {
 
       team.trust -= 10;
 
       decision.onFail?.call(game);
+
+      if (decision.failNextNode != null) {
+        game.currentNodeId = decision.failNextNode!;
+      }
 
     }
 
@@ -336,6 +344,7 @@ class GameEngine {
     game.gamePaused = false;
     game.timeExpired = false;
     game.caseFinished = false;
+    game.currentNodeId = "EXPEDIENTE_1";
   }
 
   // ============================================================
@@ -517,24 +526,11 @@ class GameEngine {
 
   void checkPatientStatus() {
 
-    if (
-    game.patient.stability <= 0 &&
-        !game.flags.patientDead
-    ) {
-
+    if (game.patient.stability <= 0) {
       game.patient.stability = 0;
-
       game.flags.patientDead = true;
-      game.flags.patientStable = false;
-      game.flags.patientCritical = false;
-    }
-
-    if (
-    game.patient.stability <= 20 &&
-        !game.flags.patientDead
-    ) {
-
-      game.flags.patientCritical = true;
+    } else {
+      game.flags.patientDead = false;
     }
   }
 
@@ -546,51 +542,73 @@ class GameEngine {
 
     switch (game.currentExpediente) {
 
+    // ============================================================
+    // EXPEDIENTE 1 → EXPEDIENTE 2
+    // Hospital → Policía
+    // ============================================================
+
       case 1:
 
         if (
-        game.flags.patientStable &&
-            game.flags.labConfirmed &&
-            game.flags.policeCalled &&
+        game.flags.policeCalled &&
             game.flags.foundPhone
         ) {
-
           game.currentExpediente = 2;
         }
 
         break;
 
+    // ============================================================
+    // EXPEDIENTE 2 → EXPEDIENTE 3
+    // Investigación → Casa del Rave
+    // ============================================================
+
       case 2:
 
         if (
-        game.flags.phoneTracked &&
-            game.flags.raveDiscovered
+        game.flags.raveHouseSuspected
         ) {
-
           game.currentExpediente = 3;
         }
 
         break;
 
+    // ============================================================
+    // EXPEDIENTE 3 → EXPEDIENTE 4
+    // Casa del Rave → Escena del crimen
+    // ============================================================
+
       case 3:
 
         if (
-        game.flags.crimeSceneVisited &&
-            game.flags.familyInterviewed
+        game.flags.crimeSceneVisited
         ) {
-
           game.currentExpediente = 4;
         }
 
         break;
 
+    // ============================================================
+    // EXPEDIENTE 4 → EXPEDIENTE 5
+    // Escena del crimen → Warehouse
+    // ============================================================
+
       case 4:
 
-        if (game.flags.warehouseUnlocked) {
-
+        if (
+        game.flags.warehouseUnlocked
+        ) {
           game.currentExpediente = 5;
         }
 
+        break;
+
+    // ============================================================
+    // EXPEDIENTE 5
+    // FINAL
+    // ============================================================
+
+      case 5:
         break;
     }
   }

@@ -17,6 +17,7 @@ class LobbyScreen extends StatefulWidget {
 class _LobbyScreenState extends State<LobbyScreen> {
 
   final List<TextEditingController> names = [];
+
   final List<TextEditingController> hospitals = [];
 
   final aliases = [
@@ -29,12 +30,12 @@ class _LobbyScreenState extends State<LobbyScreen> {
   ];
 
   // ============================================================
-  // DURACIÓN DEL CASO
+  // DURACIÓN
   // ============================================================
 
   /// Duración seleccionada en minutos.
   ///
-  /// Valor predeterminado: 60 minutos.
+  /// Predeterminado: 60 minutos.
   int caseDurationMinutes = 60;
 
   @override
@@ -74,25 +75,26 @@ class _LobbyScreenState extends State<LobbyScreen> {
     setState(() {});
   }
 
+  // ============================================================
+  // FORMATO DEL TIEMPO
+  // ============================================================
+
   String get durationLabel {
 
-    final hours = caseDurationMinutes ~/ 60;
-    final minutes = caseDurationMinutes % 60;
+    final hours =
+        caseDurationMinutes ~/ 60;
 
-    if (hours == 0) {
-      return "$minutes minutos";
-    }
+    final minutes =
+        caseDurationMinutes % 60;
 
-    if (minutes == 0) {
-      return hours == 1
-          ? "1 hora"
-          : "$hours horas";
-    }
-
-    return hours == 1
-        ? "1 hora $minutes min"
-        : "$hours horas $minutes min";
+    return
+      '${hours.toString().padLeft(2, '0')}:'
+          '${minutes.toString().padLeft(2, '0')}';
   }
+
+  // ============================================================
+  // BUILD
+  // ============================================================
 
   @override
   Widget build(BuildContext context) {
@@ -100,14 +102,20 @@ class _LobbyScreenState extends State<LobbyScreen> {
     return Scaffold(
 
       appBar: AppBar(
+
         title: const Text(
           "Hospitales participantes",
         ),
       ),
 
+      // ========================================================
+      // BOTONES DE EQUIPOS
+      // ========================================================
+
       floatingActionButton: Column(
 
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize:
+        MainAxisSize.min,
 
         children: [
 
@@ -120,12 +128,13 @@ class _LobbyScreenState extends State<LobbyScreen> {
                 ? null
                 : addTeam,
 
-            child: const Icon(
-              Icons.add,
-            ),
+            child:
+            const Icon(Icons.add),
           ),
 
-          const SizedBox(height: 10),
+          const SizedBox(
+            height: 10,
+          ),
 
           FloatingActionButton.small(
 
@@ -138,20 +147,26 @@ class _LobbyScreenState extends State<LobbyScreen> {
 
               setState(() {
 
-                names
-                    .removeLast();
+                final nameController =
+                names.removeLast();
 
-                hospitals
-                    .removeLast();
+                final hospitalController =
+                hospitals.removeLast();
+
+                nameController.dispose();
+                hospitalController.dispose();
               });
             },
 
-            child: const Icon(
-              Icons.remove,
-            ),
+            child:
+            const Icon(Icons.remove),
           ),
         ],
       ),
+
+      // ========================================================
+      // BODY
+      // ========================================================
 
       body: ListView(
 
@@ -160,9 +175,9 @@ class _LobbyScreenState extends State<LobbyScreen> {
 
         children: [
 
-          // ======================================================
-          // DURACIÓN DE LA OPERACIÓN
-          // ======================================================
+          // ====================================================
+          // DURACIÓN
+          // ====================================================
 
           Card(
 
@@ -179,7 +194,9 @@ class _LobbyScreenState extends State<LobbyScreen> {
                 children: [
 
                   const Text(
+
                     "Tiempo de operación",
+
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight:
@@ -187,13 +204,17 @@ class _LobbyScreenState extends State<LobbyScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 8),
+                  const SizedBox(
+                    height: 8,
+                  ),
 
                   const Text(
                     "Inteligencia ha determinado el tiempo disponible para localizar y detener la amenaza.",
                   ),
 
-                  const SizedBox(height: 16),
+                  const SizedBox(
+                    height: 16,
+                  ),
 
                   Row(
 
@@ -203,15 +224,19 @@ class _LobbyScreenState extends State<LobbyScreen> {
                         Icons.timer,
                       ),
 
-                      const SizedBox(width: 10),
+                      const SizedBox(
+                        width: 10,
+                      ),
 
                       Expanded(
 
                         child: Text(
+
                           durationLabel,
+
                           style:
                           const TextStyle(
-                            fontSize: 18,
+                            fontSize: 24,
                             fontWeight:
                             FontWeight.bold,
                           ),
@@ -226,12 +251,14 @@ class _LobbyScreenState extends State<LobbyScreen> {
                         onPressed: () {
 
                           setState(() {
+
                             caseDurationMinutes =
                             60;
                           });
                         },
 
-                        icon: const Icon(
+                        icon:
+                        const Icon(
                           Icons.restart_alt,
                         ),
                       ),
@@ -272,9 +299,13 @@ class _LobbyScreenState extends State<LobbyScreen> {
 
                     children: const [
 
-                      Text("1 hora"),
+                      Text(
+                        "1:00",
+                      ),
 
-                      Text("4 horas"),
+                      Text(
+                        "4:00",
+                      ),
                     ],
                   ),
                 ],
@@ -282,11 +313,13 @@ class _LobbyScreenState extends State<LobbyScreen> {
             ),
           ),
 
-          const SizedBox(height: 20),
+          const SizedBox(
+            height: 20,
+          ),
 
-          // ======================================================
+          // ====================================================
           // EQUIPOS
-          // ======================================================
+          // ====================================================
 
           ...List.generate(
 
@@ -304,8 +337,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
                   child: Column(
 
                     crossAxisAlignment:
-                    CrossAxisAlignment
-                        .start,
+                    CrossAxisAlignment.start,
 
                     children: [
 
@@ -353,7 +385,12 @@ class _LobbyScreenState extends State<LobbyScreen> {
         ],
       ),
 
+      // ========================================================
+      // INICIAR
+      // ========================================================
+
       bottomNavigationBar:
+
       Padding(
 
         padding:

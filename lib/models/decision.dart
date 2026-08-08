@@ -48,6 +48,12 @@ class Decision {
 
   final void Function(GameState game)? onFail;
 
+  /// Nodo narrativo al que se avanza después de una decisión exitosa.
+  final String? nextNode;
+
+  /// Nodo narrativo opcional si la decisión falla.
+  final String? failNextNode;
+
   const Decision({
     required this.id,
     required this.expediente,
@@ -62,12 +68,13 @@ class Decision {
     required this.trustChange,
     required this.successRate,
     required this.result,
-
     this.failResult = "",
     this.evidence,
     this.condition,
     this.onSuccess,
     this.onFail,
+    this.nextNode,
+    this.failNextNode,
   });
 
   bool isAvailable(GameState game) {

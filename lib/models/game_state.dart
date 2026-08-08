@@ -19,6 +19,8 @@ class GameState {
 
   int currentExpediente = 1;
 
+  String currentNodeId = "EXPEDIENTE_1";
+
   // ============================================================
   // CRONÓMETRO GLOBAL
   // ============================================================

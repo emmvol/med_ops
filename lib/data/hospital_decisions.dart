@@ -14,7 +14,8 @@ final Map<String, Decision> hospitalDecisions = {
     id: "VITALS",
     expediente: 1,
     title: "Valorar signos vitales",
-    description: "Registrar signos vitales completos y reevaluar al paciente.",
+    description:
+    "Registrar signos vitales completos y reevaluar al paciente.",
     icon: Icons.monitor_heart,
     type: DecisionType.medical,
     location: Location.hospital,
@@ -52,19 +53,13 @@ final Map<String, Decision> hospitalDecisions = {
     failResult:
     "No se logra estabilizar completamente al paciente.",
     condition: (game) =>
-    !game.flags.patientStable &&
-        !game.flags.patientDead &&
+    !game.flags.patientDead &&
         game.patient.stability > 20,
     onSuccess: (game) {
-      game.flags.patientStable = true;
-      game.patient.stability += 15;
+      game.patient.modifyStability(15);
     },
     onFail: (game) {
-      game.patient.stability -= 15;
-
-      if (game.patient.stability <= 20) {
-        game.flags.patientCritical = true;
-      }
+      game.patient.modifyStability(-15);
     },
   ),
 
@@ -72,7 +67,8 @@ final Map<String, Decision> hospitalDecisions = {
     id: "GLUCOSE",
     expediente: 1,
     title: "Medir glucosa",
-    description: "Realizar glucemia capilar.",
+    description:
+    "Realizar glucemia capilar.",
     icon: Icons.bloodtype,
     type: DecisionType.medical,
     location: Location.hospital,
@@ -95,7 +91,8 @@ final Map<String, Decision> hospitalDecisions = {
     id: "ECG",
     expediente: 1,
     title: "Solicitar ECG",
-    description: "Buscar alteraciones cardíacas.",
+    description:
+    "Buscar alteraciones cardíacas.",
     icon: Icons.favorite,
     type: DecisionType.medical,
     location: Location.hospital,
@@ -303,18 +300,13 @@ final Map<String, Decision> hospitalDecisions = {
     "La oxigenoterapia no consigue corregir el deterioro.",
     condition: (game) =>
     !game.flags.patientDead &&
-        !game.flags.patientStable &&
-        game.patient.stability <= 70 &&
-        game.patient.stability > 20,
+        game.patient.stability > 20 &&
+        game.patient.stability <= 70,
     onSuccess: (game) {
-      game.patient.stability += 10;
+      game.patient.modifyStability(10);
     },
     onFail: (game) {
-      game.patient.stability -= 10;
-
-      if (game.patient.stability <= 20) {
-        game.flags.patientCritical = true;
-      }
+      game.patient.modifyStability(-10);
     },
   ),
 
@@ -342,10 +334,10 @@ final Map<String, Decision> hospitalDecisions = {
         game.patient.stability <= 80,
     onSuccess: (game) {
       game.flags.ivAccessObtained = true;
-      game.patient.stability += 8;
+      game.patient.modifyStability(8);
     },
     onFail: (game) {
-      game.patient.stability -= 5;
+      game.patient.modifyStability(-5);
     },
   ),
 
@@ -369,19 +361,14 @@ final Map<String, Decision> hospitalDecisions = {
     "El paciente continúa hiperestimulado y su estado clínico empeora.",
     condition: (game) =>
     !game.flags.patientDead &&
-        !game.flags.patientStable &&
-        game.patient.stability <= 60 &&
-        game.patient.stability > 20,
+        game.patient.stability > 20 &&
+        game.patient.stability <= 60,
     onSuccess: (game) {
       game.flags.agitationControlled = true;
-      game.patient.stability += 12;
+      game.patient.modifyStability(12);
     },
     onFail: (game) {
-      game.patient.stability -= 10;
-
-      if (game.patient.stability <= 20) {
-        game.flags.patientCritical = true;
-      }
+      game.patient.modifyStability(-10);
     },
   ),
 
@@ -405,21 +392,14 @@ final Map<String, Decision> hospitalDecisions = {
     "El intento de manejo avanzado de la vía aérea fracasa y el paciente se deteriora.",
     condition: (game) =>
     !game.flags.patientDead &&
-        game.flags.patientCritical &&
-        game.patient.stability > 10,
+        game.patient.stability > 0 &&
+        game.patient.stability <= 20,
     onSuccess: (game) {
       game.flags.airwaySecured = true;
-      game.flags.patientCritical = false;
-      game.flags.patientStable = true;
-
-      game.patient.stability += 20;
+      game.patient.modifyStability(20);
     },
     onFail: (game) {
-      game.patient.stability -= 15;
-
-      if (game.patient.stability <= 10) {
-        game.flags.patientCritical = true;
-      }
+      game.patient.modifyStability(-15);
     },
   ),
 
@@ -446,7 +426,7 @@ final Map<String, Decision> hospitalDecisions = {
     condition: (game) =>
     !game.flags.patientDead,
     onSuccess: (game) {
-      game.patient.stability += 2;
+      game.patient.modifyStability(2);
     },
   ),
 };

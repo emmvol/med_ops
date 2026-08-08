@@ -69,6 +69,18 @@ class GameFlags {
 
   bool autopsyUnlocked = false;
 
+  bool secondaryPatientArrived = false;
+  bool secondaryPatientInterviewed = false;
+  bool secondaryVitalsTaken = false;
+  bool witnessInterviewed = false;
+  bool organizerInterviewed = false;
+  bool raveHouseSuspected = false;
+
+  bool secondaryPatientResolved = false;
+
+  bool specialPatientArrived = false;
+  bool specialPatientResolved = false;
+
   void reset() {
     patientStable = false;
     patientAwake = false;
@@ -97,6 +109,18 @@ class GameFlags {
     autopsyUnlocked = false;
 
     paramedicsInterviewed = false;
+
+    secondaryPatientArrived = false;
+    secondaryPatientInterviewed = false;
+    secondaryVitalsTaken = false;
+    witnessInterviewed = false;
+    organizerInterviewed = false;
+    raveHouseSuspected = false;
+
+    secondaryPatientResolved = false;
+
+    specialPatientArrived = false;
+    specialPatientResolved = false;
   }
 
 }
