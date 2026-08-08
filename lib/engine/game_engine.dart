@@ -18,14 +18,20 @@ class GameEngine {
 
   final Random random = Random();
 
+  DateTime? _lastPatientDecay;
+
   GameEngine(this.game);
 
   // ============================================================
-  // EQUIPO / HISTORIA
+  // EQUIPO
   // ============================================================
 
   Team get currentTeam =>
       game.teams[game.roundManager.currentTeam];
+
+  // ============================================================
+  // HISTORIA GLOBAL
+  // ============================================================
 
   StoryNode get currentNode =>
       caseNodes[game.currentNodeId]!;
@@ -37,59 +43,60 @@ class GameEngine {
   DecisionResult executeDecision(Decision decision) {
 
     if (game.caseFinished) {
-
       return const DecisionResult(
         success: false,
         title: "Caso terminado",
         message: "La operación ya ha finalizado.",
       );
-
     }
 
     if (game.gamePaused) {
-
       return const DecisionResult(
         success: false,
         title: "Juego pausado",
         message: "Reanuda la operación para continuar.",
       );
-
     }
 
     if (checkTimeExpired()) {
-
       return const DecisionResult(
         success: false,
         title: "Tiempo agotado",
         message: "El tiempo disponible para la operación ha terminado.",
       );
-
     }
+
+    // El tiempo afecta al paciente progresivamente.
+    _applyPatientTimePressure();
 
     final team = currentTeam;
 
     if (team.actionPoints < decision.apCost) {
-
       return const DecisionResult(
         success: false,
         title: "Sin acciones",
         message: "No quedan suficientes puntos de acción.",
       );
-
     }
 
     if (team.money < decision.moneyCost) {
-
       return const DecisionResult(
         success: false,
         title: "Fondos insuficientes",
         message: "El equipo no dispone de fondos suficientes.",
       );
-
     }
+
+    // ------------------------------------------------------------
+    // COSTOS
+    // ------------------------------------------------------------
 
     team.actionPoints -= decision.apCost;
     team.money -= decision.moneyCost;
+
+    // ------------------------------------------------------------
+    // RESULTADO
+    // ------------------------------------------------------------
 
     final success =
         random.nextInt(100) < decision.successRate;
@@ -108,42 +115,84 @@ class GameEngine {
 
       decision.onSuccess?.call(game);
 
-      if (decision.nextNode != null) {
-        game.currentNodeId = decision.nextNode!;
-      }
-
     } else {
 
-      team.trust -= 10;
+      // El fracaso tiene una penalización moderada.
+      // No queremos que una sola mala decisión destruya una partida.
+      team.trust -= 5;
 
       decision.onFail?.call(game);
-
-      if (decision.failNextNode != null) {
-        game.currentNodeId = decision.failNextNode!;
-      }
-
     }
 
+    // ------------------------------------------------------------
+    // ESTADO CLÍNICO
+    // ------------------------------------------------------------
+
     checkPatientStatus();
+
+    // ------------------------------------------------------------
+    // PROGRESIÓN GLOBAL
+    // ------------------------------------------------------------
+
     checkStoryProgress();
 
     return DecisionResult(
-
       success: success,
-
       title: success
           ? "Acción completada"
           : "Acción fallida",
-
       message: success
           ? decision.result
           : decision.failResult,
-
       evidence: success
           ? decision.evidence
           : null,
-
     );
+  }
+
+  // ============================================================
+  // PRESIÓN TEMPORAL SOBRE EL PACIENTE
+  // ============================================================
+
+  void _applyPatientTimePressure() {
+
+    if (
+    !game.caseStarted ||
+        game.gamePaused ||
+        game.caseFinished ||
+        game.flags.patientDead
+    ) {
+      return;
+    }
+
+    final now = DateTime.now();
+
+    _lastPatientDecay ??= now;
+
+    final elapsed =
+    now.difference(_lastPatientDecay!);
+
+    // La estabilidad cae lentamente con el tiempo real.
+    //
+    // Esto evita que una partida larga tenga automáticamente
+    // que matar al paciente por cantidad de decisiones.
+    //
+    // 1 punto cada 60 segundos aproximadamente.
+
+    final minutes = elapsed.inMinutes;
+
+    if (minutes <= 0) {
+      return;
+    }
+
+    game.patient.modifyStability(-minutes);
+
+    _lastPatientDecay =
+        _lastPatientDecay!.add(
+          Duration(minutes: minutes),
+        );
+
+    checkPatientStatus();
   }
 
   // ============================================================
@@ -156,13 +205,13 @@ class GameEngine {
       return game.caseDuration;
     }
 
-    Duration elapsed = game.elapsedBeforePause;
+    Duration elapsed =
+        game.elapsedBeforePause;
 
     if (
     !game.gamePaused &&
         game.caseStartedAt != null
     ) {
-
       elapsed += DateTime.now().difference(
         game.caseStartedAt!,
       );
@@ -180,9 +229,8 @@ class GameEngine {
 
   bool get isTimeCritical {
 
-    final remaining = remainingTime;
-
-    return remaining <= const Duration(minutes: 15);
+    return remainingTime <=
+        const Duration(minutes: 15);
   }
 
   String get formattedRemainingTime {
@@ -196,12 +244,10 @@ class GameEngine {
     duration.inSeconds.remainder(60);
 
     if (hours > 0) {
-
       return
         '${hours.toString().padLeft(2, '0')}:'
             '${minutes.toString().padLeft(2, '0')}:'
             '${seconds.toString().padLeft(2, '0')}';
-
     }
 
     return
@@ -215,6 +261,9 @@ class GameEngine {
 
     game.elapsedBeforePause =
         Duration.zero;
+
+    _lastPatientDecay =
+        DateTime.now();
 
     game.caseStarted = true;
     game.gamePaused = false;
@@ -256,6 +305,10 @@ class GameEngine {
     }
 
     game.caseStartedAt = DateTime.now();
+
+    _lastPatientDecay =
+        DateTime.now();
+
     game.gamePaused = false;
   }
 
@@ -281,8 +334,6 @@ class GameEngine {
     return false;
   }
 
-  /// Agrega 15 minutos para continuar la partida
-  /// después de agotar el tiempo.
   void extendCaseBy15Minutes() {
 
     if (!game.timeExpired) {
@@ -295,13 +346,17 @@ class GameEngine {
     game.timeExpired = false;
     game.caseFinished = false;
 
-    game.caseStartedAt = DateTime.now();
+    game.caseStartedAt =
+        DateTime.now();
+
+    _lastPatientDecay =
+        DateTime.now();
 
     game.gamePaused = false;
   }
 
   // ============================================================
-  // REINICIAR CASO
+  // RESET
   // ============================================================
 
   void resetCase({
@@ -324,9 +379,11 @@ class GameEngine {
 
       team.evidence.clear();
 
-      team.location = Location.hospital;
+      team.location =
+          Location.hospital;
 
-      team.currentNode = "EXPEDIENTE_1";
+      team.currentNode =
+      "EXPEDIENTE_1";
     }
 
     game.roundManager.reset();
@@ -340,11 +397,15 @@ class GameEngine {
     game.elapsedBeforePause =
         Duration.zero;
 
+    _lastPatientDecay = null;
+
     game.caseStarted = false;
     game.gamePaused = false;
     game.timeExpired = false;
     game.caseFinished = false;
-    game.currentNodeId = "EXPEDIENTE_1";
+
+    game.currentNodeId =
+    "EXPEDIENTE_1";
   }
 
   // ============================================================
@@ -353,17 +414,21 @@ class GameEngine {
 
   GameEvent? checkRandomEvent() {
 
-    final roll = random.nextInt(100);
+    final roll =
+    random.nextInt(100);
 
     if (
     !game.flags.patientAwake &&
+        !game.flags.patientDead &&
         roll < 12
     ) {
 
       game.flags.patientAwake = true;
 
       return randomEvents.firstWhere(
-            (e) => e.title == "Paciente despierta",
+            (e) =>
+        e.title ==
+            "Paciente despierta",
       );
     }
 
@@ -376,17 +441,22 @@ class GameEngine {
       game.flags.phoneTracked = true;
 
       return randomEvents.firstWhere(
-            (e) => e.title == "Teléfono localizado",
+            (e) =>
+        e.title ==
+            "Teléfono localizado",
       );
     }
 
     if (
     game.patient.stability < 40 &&
+        !game.flags.patientDead &&
         roll < 25
     ) {
 
       return randomEvents.firstWhere(
-            (e) => e.title == "Paciente empeora",
+            (e) =>
+        e.title ==
+            "Paciente empeora",
       );
     }
 
@@ -399,40 +469,44 @@ class GameEngine {
 
   List<Decision> getAvailableDecisions() {
 
-    if (game.caseFinished ||
-        game.gamePaused) {
+    if (
+    game.caseFinished ||
+        game.gamePaused
+    ) {
       return [];
     }
 
-    return decisions.values.where((decision) {
+    return decisions.values.where(
+          (decision) {
 
-      if (
-      decision.location !=
-          currentTeam.location
-      ) {
-        return false;
-      }
+        if (
+        decision.location !=
+            currentTeam.location
+        ) {
+          return false;
+        }
 
-      if (
-      decision.expediente >
-          game.currentExpediente
-      ) {
-        return false;
-      }
+        // El expediente es global.
+        if (
+        decision.expediente >
+            game.currentExpediente
+        ) {
+          return false;
+        }
 
-      if (
-      decision.repeat ==
-          DecisionRepeat.once &&
-          game.completedActions.contains(
-            decision.id,
-          )
-      ) {
-        return false;
-      }
+        if (
+        decision.repeat ==
+            DecisionRepeat.once &&
+            game.completedActions.contains(
+              decision.id,
+            )
+        ) {
+          return false;
+        }
 
-      return decision.isAvailable(game);
-
-    }).toList();
+        return decision.isAvailable(game);
+      },
+    ).toList();
   }
 
   // ============================================================
@@ -452,7 +526,6 @@ class GameEngine {
       ) {
 
     if (game.caseFinished) {
-
       return const DecisionResult(
         success: false,
         title: "Caso terminado",
@@ -461,7 +534,6 @@ class GameEngine {
     }
 
     if (game.gamePaused) {
-
       return const DecisionResult(
         success: false,
         title: "Juego pausado",
@@ -470,7 +542,6 @@ class GameEngine {
     }
 
     if (checkTimeExpired()) {
-
       return const DecisionResult(
         success: false,
         title: "Tiempo agotado",
@@ -479,7 +550,6 @@ class GameEngine {
     }
 
     if (currentTeam.actionPoints <= 0) {
-
       return const DecisionResult(
         success: false,
         title: "Sin acciones",
@@ -494,7 +564,8 @@ class GameEngine {
     return DecisionResult(
       success: true,
       title: location.label,
-      message: "El equipo se ha trasladado a ${location.label}.",
+      message:
+      "El equipo se ha trasladado a ${location.label}.",
     );
   }
 
@@ -526,87 +597,75 @@ class GameEngine {
 
   void checkPatientStatus() {
 
-    if (game.patient.stability <= 0) {
+    if (
+    game.patient.stability <= 0
+    ) {
+
       game.patient.stability = 0;
+
       game.flags.patientDead = true;
+
+      // La muerte bloquea acciones clínicas normales,
+      // pero NO termina la campaña.
+      //
+      // Esto es importante porque EXPEDIENTE 4 todavía
+      // puede contener la autopsia.
+
     } else {
+
       game.flags.patientDead = false;
     }
+
+    // Estados auxiliares.
+
+    game.flags.patientCritical =
+        game.patient.stability <= 25 &&
+            !game.flags.patientDead;
+
+    game.flags.patientStable =
+        game.patient.stability >= 70 &&
+            !game.flags.patientDead;
   }
 
   // ============================================================
-  // PROGRESIÓN DE HISTORIA
+  // PROGRESIÓN GLOBAL
   // ============================================================
 
   void checkStoryProgress() {
 
     switch (game.currentExpediente) {
 
-    // ============================================================
-    // EXPEDIENTE 1 → EXPEDIENTE 2
-    // Hospital → Policía
-    // ============================================================
-
       case 1:
 
-        if (
-        game.flags.policeCalled &&
-            game.flags.foundPhone
-        ) {
+        if (game.flags.exp1Complete) {
           game.currentExpediente = 2;
         }
 
         break;
 
-    // ============================================================
-    // EXPEDIENTE 2 → EXPEDIENTE 3
-    // Investigación → Casa del Rave
-    // ============================================================
-
       case 2:
 
-        if (
-        game.flags.raveHouseSuspected
-        ) {
+        if (game.flags.exp2Complete) {
           game.currentExpediente = 3;
         }
 
         break;
 
-    // ============================================================
-    // EXPEDIENTE 3 → EXPEDIENTE 4
-    // Casa del Rave → Escena del crimen
-    // ============================================================
-
       case 3:
 
-        if (
-        game.flags.crimeSceneVisited
-        ) {
+        if (game.flags.exp3Complete) {
           game.currentExpediente = 4;
         }
 
         break;
 
-    // ============================================================
-    // EXPEDIENTE 4 → EXPEDIENTE 5
-    // Escena del crimen → Warehouse
-    // ============================================================
-
       case 4:
 
-        if (
-        game.flags.warehouseUnlocked
-        ) {
+        if (game.flags.exp4Complete) {
           game.currentExpediente = 5;
         }
 
         break;
-
-    // ============================================================
-    // EXPEDIENTE 5
-    // FINAL
-    // ============================================================
 
       case 5:
         break;

@@ -4,7 +4,7 @@ class CaseTimerOptions {
   Duration(hours: 1);
 
   static const Duration minimumDuration =
-  Duration(hours: 1);
+  Duration(minutes: 15);
 
   static const Duration maximumDuration =
   Duration(hours: 4);

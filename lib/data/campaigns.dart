@@ -1,7 +1,6 @@
 import '../models/campaign.dart';
 
 const operationQuimera = Campaign(
-
   id: "QUIMERA",
 
   title: "Operación Quimera",
@@ -9,55 +8,56 @@ const operationQuimera = Campaign(
   subtitle: "Campaña de Toxicología Médico-Legal",
 
   description:
-  "Una investigación clínica y médico-legal en la que las decisiones médicas, toxicológicas y policiales determinarán si una cadena de intoxicaciones puede ser contenida antes de que alcance a toda la ciudad.",
+  "Una cadena de intoxicaciones aparentemente aisladas comienza a revelar "
+      "un patrón común. Las decisiones clínicas, toxicológicas y médico-legales "
+      "determinarán hasta dónde llegará la investigación.",
 
   intro: [
 
     "CIUDAD DE SAN PACHUCA.",
 
-    "Durante las últimas seis semanas, los servicios de urgencias han registrado un aumento inusual de intoxicaciones relacionadas con fiestas clandestinas, consumo de drogas y mezclas de sustancias.",
+    "Durante las últimas seis semanas, los servicios de urgencias han registrado "
+        "un incremento inusual de intoxicaciones relacionadas con fiestas clandestinas.",
 
-    "Los cuadros clínicos no coinciden entre sí. Algunos pacientes presentan agitación extrema; otros, depresión neurológica, convulsiones, hipertermia o alteraciones cardiovasculares.",
+    "Los pacientes no presentan siempre el mismo cuadro.",
 
-    "Los primeros análisis tampoco ofrecen una respuesta sencilla: cocaína, alcohol, estimulantes, fármacos y otras sustancias aparecen en distintas combinaciones.",
+    "Algunos llegan agitados y con hipertermia. Otros presentan depresión neurológica, "
+        "convulsiones o alteraciones cardiovasculares.",
 
-    "La policía sospecha que los casos podrían estar relacionados con una misma red de distribución.",
+    "Los análisis toxicológicos tampoco ofrecen una explicación única.",
 
-    "El nombre 'Quimera' aparece por primera vez en un informe policial. No corresponde todavía a una sustancia identificada. Es simplemente el nombre provisional asignado a la operación.",
+    "En algunos casos aparecen estimulantes. En otros, alcohol, fármacos o mezclas "
+        "de sustancias.",
 
-    "Durante un operativo, un joven de 22 años es encontrado inconsciente y trasladado con vida a uno de los hospitales participantes.",
+    "Hasta ahora, nadie ha podido determinar si los casos están relacionados.",
+
+    "Esta noche, un nuevo paciente ingresa a urgencias.",
+
+    "22 años.",
+
+    "Sin identificación.",
+
+    "Encontrado inconsciente en un callejón del centro.",
 
     "Su estado es crítico.",
 
-    "Como equipos hospitalarios de alto nivel, su deber será salvarlo.",
+    "El expediente de su caso acaba de llegar a sus manos.",
 
-    "Podría ser la clave del caso.",
+    "Sus equipos, aún de diferentes áreas, deberán trabajar en conjunto para resolver este caso..",
 
-    "Inteligencia acaba de emitir una alerta: si la red no es localizada a tiempo, una nueva distribución masiva podría alcanzar distintos puntos de San Pachuca.",
-
-    "El plazo estimado es limitado.",
-
-    "Cada decisión médica puede mantener con vida al paciente.",
-
-    "Cada muestra puede cambiar la interpretación toxicológica.",
-
-    "Cada minuto puede acercar o alejar a la ciudad del punto de no retorno.",
-
-    "Ahora, es momento de estabilizar al paciente.",
+    "Lo primero es salvarle la vida.",
 
   ],
 
   objective:
-  "Mantener con vida al paciente índice, establecer la naturaleza de las intoxicaciones, reunir evidencia médico-legal e identificar a la red responsable antes de que ocurra una nueva distribución masiva.",
+  "Mantener con vida al paciente índice, identificar el patrón de las intoxicaciones, "
+      "reunir evidencia médico-legal y determinar el origen de la cadena de casos.",
 
   caseOrder: [
-
     "EXPEDIENTE_1",
     "EXPEDIENTE_2",
     "EXPEDIENTE_3",
     "EXPEDIENTE_4",
     "EXPEDIENTE_5",
-
   ],
-
 );

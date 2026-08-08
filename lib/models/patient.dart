@@ -10,7 +10,7 @@ class Patient {
   int stability;
 
   Patient({
-    this.stability = 70,
+    this.stability = 55,
   });
 
   PatientStatus get status {
@@ -44,6 +44,6 @@ class Patient {
   }
 
   void reset() {
-    stability = 70;
+    stability = 55;
   }
 }

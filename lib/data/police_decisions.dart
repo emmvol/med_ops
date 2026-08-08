@@ -124,4 +124,34 @@ final Map<String, Decision> policeDecisions = {
     },
     nextNode: "EXP2_RAVE_HOUSE_LEAD",
   ),
+
+  "POLICE_CORRELATE_EVIDENCE": Decision(
+    id: "POLICE_CORRELATE_EVIDENCE",
+    expediente: 2,
+    title: "Correlacionar información",
+    description:
+    "Comparar la declaración del testigo, la localización del teléfono y la información obtenida del organizador.",
+    icon: Icons.account_tree,
+    type: DecisionType.investigation,
+    location: Location.police,
+    repeat: DecisionRepeat.once,
+
+    apCost: 1,
+    moneyCost: 0,
+    trustChange: 12,
+    successRate: 100,
+
+    result:
+    "Las declaraciones y los registros de localización coinciden en un mismo domicilio. La policía autoriza la investigación del inmueble.",
+
+    condition: (game) =>
+    game.flags.witnessInterviewed &&
+        game.flags.phoneTracked &&
+        game.flags.organizerInterviewed &&
+        !game.flags.raveHouseIdentified,
+
+    onSuccess: (game) {
+      game.flags.raveHouseIdentified = true;
+    },
+  ),
 };
