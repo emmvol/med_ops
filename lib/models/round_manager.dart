@@ -18,4 +18,9 @@ class RoundManager {
 
   }
 
+  void reset() {
+    round = 1;
+    currentTeam = 0;
+  }
+
 }

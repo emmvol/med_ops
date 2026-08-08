@@ -5,15 +5,16 @@ import 'game_state.dart';
 import 'location.dart';
 
 enum DecisionRepeat {
-
   once,
   repeatable,
-
+  untilSuccess,
 }
 
 class Decision {
 
   final String id;
+
+  final int expediente;
 
   final String title;
 
@@ -24,8 +25,6 @@ class Decision {
   final DecisionType type;
 
   final Location location;
-
-  final int expediente;
 
   final DecisionRepeat repeat;
 
@@ -50,46 +49,28 @@ class Decision {
   final void Function(GameState game)? onFail;
 
   const Decision({
-
     required this.id,
+    required this.expediente,
     required this.title,
     required this.description,
-
     required this.icon,
     required this.type,
-
     required this.location,
-
-    required this.expediente,
-
-    this.repeat = DecisionRepeat.once,
-
-    this.apCost = 1,
-
+    required this.repeat,
+    required this.apCost,
     required this.moneyCost,
-
     required this.trustChange,
-
+    required this.successRate,
     required this.result,
 
     this.failResult = "",
-
-    this.successRate = 100,
-
     this.evidence,
-
     this.condition,
-
     this.onSuccess,
-
     this.onFail,
-
   });
 
-  bool isAvailable(GameState game){
-
+  bool isAvailable(GameState game) {
     return condition?.call(game) ?? true;
-
   }
-
 }

@@ -9,34 +9,54 @@ const operationQuimera = Campaign(
   subtitle: "Campaña de Toxicología Médico-Legal",
 
   description:
-  "Una investigación clínica en la que las decisiones médicas, toxicológicas y legales determinarán el destino de una ciudad.",
+  "Una investigación clínica y médico-legal en la que las decisiones médicas, toxicológicas y policiales determinarán si una cadena de intoxicaciones puede ser contenida antes de que alcance a toda la ciudad.",
 
   intro: [
 
-    "Ciudad de San Pachuca.",
+    "CIUDAD DE SAN PACHUCA.",
 
-    "Durante las últimas seis semanas se han registrado múltiples intoxicaciones por una nueva droga de composición desconocida.",
+    "Durante las últimas seis semanas, los servicios de urgencias han registrado un aumento inusual de intoxicaciones relacionadas con fiestas clandestinas, consumo de drogas y mezclas de sustancias.",
 
-    "Las víctimas presentan cuadros clínicos muy diferentes, lo que ha impedido identificar rápidamente la sustancia responsable.",
+    "Los cuadros clínicos no coinciden entre sí. Algunos pacientes presentan agitación extrema; otros, depresión neurológica, convulsiones, hipertermia o alteraciones cardiovasculares.",
 
-    "Las autoridades han denominado provisionalmente a esta droga como 'Quimera'.",
+    "Los primeros análisis tampoco ofrecen una respuesta sencilla: cocaína, alcohol, estimulantes, fármacos y otras sustancias aparecen en distintas combinaciones.",
 
-    "Un operativo policial permitió encontrar con vida a un joven de 22 años, presuntamente relacionado con la distribución de la sustancia.",
+    "La policía sospecha que los casos podrían estar relacionados con una misma red de distribución.",
 
-    "Aunque inicialmente fue considerado una víctima más, la investigación sugiere que podría conocer la identidad de quienes introdujeron Quimera a la ciudad.",
+    "El nombre 'Quimera' aparece por primera vez en un informe policial. No corresponde todavía a una sustancia identificada. Es simplemente el nombre provisional asignado a la operación.",
+
+    "Durante un operativo, un joven de 22 años es encontrado inconsciente y trasladado con vida a uno de los hospitales participantes.",
 
     "Su estado es crítico.",
 
-    "Cada decisión clínica, toxicológica y médico-legal modificará el desarrollo de la investigación.",
+    "Como equipos hospitalarios de alto nivel, su deber será salvarlo.",
+
+    "Podría ser la clave del caso.",
+
+    "Inteligencia acaba de emitir una alerta: si la red no es localizada a tiempo, una nueva distribución masiva podría alcanzar distintos puntos de San Pachuca.",
+
+    "El plazo estimado es limitado.",
+
+    "Cada decisión médica puede mantener con vida al paciente.",
+
+    "Cada muestra puede cambiar la interpretación toxicológica.",
+
+    "Cada minuto puede acercar o alejar a la ciudad del punto de no retorno.",
+
+    "Ahora, es momento de estabilizar al paciente.",
 
   ],
 
   objective:
-  "Mantener con vida al paciente, reunir evidencia suficiente e identificar a la organización responsable de distribuir Quimera.",
+  "Mantener con vida al paciente índice, establecer la naturaleza de las intoxicaciones, reunir evidencia médico-legal e identificar a la red responsable antes de que ocurra una nueva distribución masiva.",
 
   caseOrder: [
 
-    "START",
+    "EXPEDIENTE_1",
+    "EXPEDIENTE_2",
+    "EXPEDIENTE_3",
+    "EXPEDIENTE_4",
+    "EXPEDIENTE_5",
 
   ],
 

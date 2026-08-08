@@ -19,17 +19,38 @@ class GameState {
 
   int currentExpediente = 1;
 
+  // ============================================================
+  // CRONÓMETRO GLOBAL
+  // ============================================================
+
+  Duration caseDuration;
+
+  DateTime? caseStartedAt;
+
+  Duration elapsedBeforePause = Duration.zero;
+
+  bool caseStarted = false;
+
+  bool gamePaused = false;
+
+  bool timeExpired = false;
+
+  bool caseFinished = false;
+
   GameState({
 
     required this.teams,
     required this.patient,
+    required this.caseDuration,
 
     Set<String>? completedActions,
     RoundManager? roundManager,
     GameFlags? flags,
 
-  })  : completedActions = completedActions ?? {},
+  })  : completedActions =
+      completedActions ?? {},
         flags = flags ?? GameFlags(),
-        roundManager = roundManager ?? RoundManager();
+        roundManager =
+            roundManager ?? RoundManager();
 
 }

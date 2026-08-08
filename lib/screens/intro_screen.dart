@@ -8,9 +8,12 @@ class IntroScreen extends StatefulWidget {
 
   final List<Team> teams;
 
+  final Duration caseDuration;
+
   const IntroScreen({
     super.key,
     required this.teams,
+    required this.caseDuration,
   });
 
   @override
@@ -82,19 +85,13 @@ class _IntroScreenState extends State<IntroScreen> {
                 else{
 
                   Navigator.pushReplacement(
-
                     context,
-
                     MaterialPageRoute(
-
                       builder: (_) => GameScreen(
-
                         teams: widget.teams,
-
+                        caseDuration: widget.caseDuration,
                       ),
-
                     ),
-
                   );
 
                 }

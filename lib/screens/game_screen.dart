@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../engine/game_engine.dart';
@@ -14,40 +16,154 @@ import '../widgets/patient_panel.dart';
 import '../widgets/result_dialog.dart';
 import '../widgets/team_dashboard.dart';
 
+import 'game_over_screen.dart';
+
 class GameScreen extends StatefulWidget {
 
   final List<Team> teams;
 
+  final GameEngine? existingEngine;
+
+  final Duration? caseDuration;
+
   const GameScreen({
     super.key,
     required this.teams,
+    this.caseDuration,
+    this.existingEngine,
   });
 
   @override
-  State<GameScreen> createState() => _GameScreenState();
+  State<GameScreen> createState() =>
+      _GameScreenState();
 }
 
 class _GameScreenState extends State<GameScreen> {
 
   late final GameEngine engine;
 
+  Timer? _timer;
+
+  // ============================================================
+  // INICIALIZACIÓN
+  // ============================================================
+
   @override
   void initState() {
+
     super.initState();
 
-    engine = GameEngine(
+    engine = widget.existingEngine ??
+        GameEngine(
+          GameState(
+            teams: widget.teams,
+            patient: Patient(),
+            caseDuration:
+            widget.caseDuration ??
+                const Duration(hours: 1),
+          ),
+        );
 
-      GameState(
+    if (!engine.game.caseStarted) {
+      engine.startCase();
+    }
 
-        teams: widget.teams,
-
-        patient: Patient(),
-
-      ),
-
+    _timer = Timer.periodic(
+      const Duration(seconds: 1),
+          (_) => _updateTimer(),
     );
-
   }
+
+  // ============================================================
+  // CRONÓMETRO
+  // ============================================================
+
+  void _updateTimer() {
+
+    if (!mounted) {
+      return;
+    }
+
+    if (engine.checkTimeExpired()) {
+
+      _timer?.cancel();
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => GameOverScreen(
+            engine: engine,
+          ),
+        ),
+      );
+
+      return;
+    }
+
+    setState(() {});
+  }
+
+  // ============================================================
+  // PAUSA
+  // ============================================================
+
+  Future<void> _showPauseMenu() async {
+
+    if (engine.game.gamePaused) {
+      return;
+    }
+
+    engine.pauseGame();
+
+    if (!mounted) {
+      return;
+    }
+
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+
+      builder: (_) => AlertDialog(
+
+        title: const Row(
+          children: [
+            Icon(Icons.pause_circle_outline),
+            SizedBox(width: 10),
+            Text("Operación pausada"),
+          ],
+        ),
+
+        content: const Text(
+          "El cronómetro se encuentra detenido. "
+              "Ninguna acción podrá realizarse hasta reanudar la operación.",
+        ),
+
+        actions: [
+
+          FilledButton.icon(
+
+            icon: const Icon(Icons.play_arrow),
+
+            label: const Text("Reanudar"),
+
+            onPressed: () {
+
+              engine.resumeGame();
+
+              Navigator.pop(context);
+
+              setState(() {});
+            },
+          ),
+
+        ],
+      ),
+    );
+  }
+
+  // ============================================================
+  // BUILD
+  // ============================================================
 
   @override
   Widget build(BuildContext context) {
@@ -57,341 +173,592 @@ class _GameScreenState extends State<GameScreen> {
 
     return Scaffold(
 
+      // ========================================================
+      // APP BAR
+      // ========================================================
+
       appBar: AppBar(
 
-        title: const Text("Operación Quimera"),
+        title: const Text(
+          "Operación Quimera",
+        ),
 
+        actions: [
+
+          // ----------------------------------------------------
+          // TIEMPO
+          // ----------------------------------------------------
+
+          Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 4,
+            ),
+
+            child: Center(
+
+              child: Row(
+
+                children: [
+
+                  Icon(
+                    engine.isTimeCritical
+                        ? Icons.warning_amber
+                        : Icons.timer,
+                  ),
+
+                  const SizedBox(width: 5),
+
+                  Text(
+                    engine.formattedRemainingTime,
+
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+
+                      color:
+                      engine.isTimeCritical
+                          ? Colors.red
+                          : null,
+                    ),
+                  ),
+
+                ],
+              ),
+            ),
+          ),
+
+          // ----------------------------------------------------
+          // PAUSA
+          // ----------------------------------------------------
+
+          IconButton(
+
+            tooltip: "Pausar operación",
+
+            icon: const Icon(
+              Icons.pause,
+            ),
+
+            onPressed:
+            engine.game.gamePaused
+                ? null
+                : _showPauseMenu,
+          ),
+
+          const SizedBox(width: 6),
+        ],
       ),
 
-        body: Padding(
+      // ========================================================
+      // BODY
+      // ========================================================
 
-          padding: const EdgeInsets.all(16),
+      body: Padding(
 
-          child: Column(
+        padding: const EdgeInsets.all(16),
 
-            children: [
+        child: Column(
 
-              CaseHeader(
+          children: [
 
-                round: engine.game.roundManager.round,
+            // ==================================================
+            // ENCABEZADO DEL CASO
+            // ==================================================
 
-                currentTeam: engine.currentTeam,
+            CaseHeader(
 
-                expediente: node.expediente,
+              round:
+              engine.game.roundManager.round,
 
-                title: node.title,
+              currentTeam:
+              engine.currentTeam,
 
-                location: team.location.label,
+              expediente:
+              node.expediente,
 
-              ),
+              title:
+              node.title,
 
-              const SizedBox(height: 12),
+              location:
+              team.location.label,
+            ),
 
-              TeamDashboard(
+            const SizedBox(height: 12),
 
-                teams: engine.game.teams,
+            // ==================================================
+            // TIEMPO
+            // ==================================================
 
-                currentTurn: engine.game.roundManager.currentTeam,
+            Card(
 
-              ),
+              child: Padding(
 
-              const SizedBox(height: 16),
-
-              Align(
-                alignment: Alignment.centerRight,
-                child: OutlinedButton.icon(
-                  icon: const Icon(Icons.map),
-                  label: const Text('Viajar'),
-                  onPressed: () async {
-                    final location = await showDialog<Location>(
-                      context: context,
-                      builder: (_) => AlertDialog(
-                        title: const Text('Seleccionar ubicación'),
-                        content: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: engine
-                              .getAvailableLocations()
-                              .map(
-                                (loc) => ListTile(
-                              leading: const Icon(Icons.place),
-                              title: Text(loc.label),
-                              onTap: () => Navigator.pop(context, loc),
-                            ),
-                          )
-                              .toList(),
-                        ),
-                      ),
-                    );
-
-                    if (location != null) {
-
-                      final result = engine.travelTo(location);
-
-                      if (mounted) {
-
-                        await showDialog(
-                          context: context,
-                          builder: (_) => ResultDialog(
-                            result: result,
-                          ),
-                        );
-
-                      }
-
-                      setState(() {});
-
-                    }
-                  },
+                padding:
+                const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
                 ),
-              ),
-
-              const SizedBox(height: 12),
-
-              Expanded(
 
                 child: Row(
 
+                  mainAxisAlignment:
+                  MainAxisAlignment.spaceBetween,
+
                   children: [
 
-                    Expanded(
+                    const Row(
+                      children: [
 
-                      flex: 3,
+                        Icon(
+                          Icons.timer,
+                        ),
 
-                      child: Column(
+                        SizedBox(width: 8),
 
-                        children: [
+                        Text(
+                          "Tiempo restante",
+                        ),
+                      ],
+                    ),
 
-                          Card(
+                    Text(
+                      engine.formattedRemainingTime,
 
-                            child: Padding(
+                      style: TextStyle(
 
-                              padding: const EdgeInsets.all(20),
+                        fontSize: 22,
 
-                              child: Column(
+                        fontWeight:
+                        FontWeight.bold,
 
-                                crossAxisAlignment:
-                                CrossAxisAlignment.start,
+                        color:
+                        engine.isTimeCritical
+                            ? Colors.red
+                            : null,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
 
-                                children: [
+            const SizedBox(height: 12),
 
-                                  Text(
+            // ==================================================
+            // EQUIPOS
+            // ==================================================
 
-                                    node.title,
+            TeamDashboard(
 
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .headlineSmall,
+              teams:
+              engine.game.teams,
 
-                                  ),
+              currentTurn:
+              engine.game.roundManager.currentTeam,
+            ),
 
-                                  const SizedBox(height:12),
+            const SizedBox(height: 16),
 
-                                  Text(node.description),
+            // ==================================================
+            // VIAJAR
+            // ==================================================
 
-                                ],
+            Align(
 
-                              ),
+              alignment:
+              Alignment.centerRight,
 
-                            ),
+              child: OutlinedButton.icon(
 
+                icon:
+                const Icon(Icons.map),
+
+                label:
+                const Text("Viajar"),
+
+                onPressed:
+                engine.game.gamePaused
+                    ? null
+                    : () async {
+
+                  final location =
+                  await showDialog<Location>(
+
+                    context:
+                    context,
+
+                    builder: (_) =>
+                        AlertDialog(
+
+                          title:
+                          const Text(
+                            "Seleccionar ubicación",
                           ),
 
-                          const SizedBox(height:16),
+                          content:
+                          Column(
 
-                          Expanded(
+                            mainAxisSize:
+                            MainAxisSize.min,
 
-                            child: ListView(
+                            children: engine
+                                .getAvailableLocations()
+                                .map(
 
-                              children: engine
+                                  (loc) =>
+                                  ListTile(
 
-                                  .getAvailableDecisions()
-
-                                  .map(
-
-                                    (decision) => DecisionCard(
-
-                                  decision: decision,
-
-                                  onTap: () async {
-
-                                    final result =
-
-                                    engine.executeDecision(decision);
-
-                                    await showDialog(
-
-                                      context: context,
-
-                                      builder: (_) => ResultDialog(
-
-                                        result: result,
-
-                                      ),
-
-                                    );
-
-                                    setState(() {});
-
-                                  },
-
-                                ),
-
-                              )
-
-                                  .toList(),
-
-                            ),
-
-                          ),
-
-                          const SizedBox(height: 12),
-
-                          Row(
-
-                            children: [
-
-                              Expanded(
-
-                                child: InfoPanel(
-
-                                  title: "AP",
-
-                                  value: "${team.actionPoints}/3",
-
-                                ),
-
-                              ),
-
-                              const SizedBox(width: 10),
-
-                              Expanded(
-
-                                child: InfoPanel(
-
-                                  title: "Reputación",
-
-                                  value: "${team.trust}",
-
-                                ),
-
-                              ),
-
-                              const SizedBox(width: 10),
-
-                              Expanded(
-
-                                child: InfoPanel(
-
-                                  title: "Fondos",
-
-                                  value: "\$${team.money}",
-
-                                ),
-
-                              ),
-
-                            ],
-
-                          ),
-
-                          const SizedBox(height: 12),
-
-                          SizedBox(
-
-                            width: double.infinity,
-
-                            child: FilledButton.icon(
-
-                              icon: const Icon(Icons.skip_next),
-
-                              label: const Text("Finalizar turno"),
-
-                              onPressed: () {
-
-                                engine.endTurn();
-
-                                final event = engine.checkRandomEvent();
-
-                                if (event != null) {
-
-                                  showDialog(
-
-                                    context: context,
-
-                                    builder: (_) => AlertDialog(
-
-                                      title: Text(event.title),
-
-                                      content: Text(event.description),
-
+                                    leading:
+                                    const Icon(
+                                      Icons.place,
                                     ),
 
-                                  );
+                                    title:
+                                    Text(
+                                      loc.label,
+                                    ),
 
-                                }
+                                    onTap: () =>
+                                        Navigator.pop(
+                                          context,
+                                          loc,
+                                        ),
+                                  ),
+                            )
+                                .toList(),
+                          ),
+                        ),
+                  );
 
-                                setState(() {});
+                  if (location != null) {
 
-                              },
+                    final result =
+                    engine.travelTo(
+                      location,
+                    );
 
+                    if (mounted) {
+
+                      await showDialog(
+                        context: context,
+
+                        builder: (_) =>
+                            ResultDialog(
+                              result:
+                              result,
+                            ),
+                      );
+                    }
+
+                    setState(() {});
+                  }
+                },
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            // ==================================================
+            // CONTENIDO PRINCIPAL
+            // ==================================================
+
+            Expanded(
+
+              child: Row(
+
+                children: [
+
+                  // ============================================
+                  // COLUMNA PRINCIPAL
+                  // ============================================
+
+                  Expanded(
+
+                    flex: 3,
+
+                    child: Column(
+
+                      children: [
+
+                        // ----------------------------------------
+                        // EXPEDIENTE
+                        // ----------------------------------------
+
+                        Card(
+
+                          child: Padding(
+
+                            padding:
+                            const EdgeInsets.all(20),
+
+                            child: Column(
+
+                              crossAxisAlignment:
+                              CrossAxisAlignment.start,
+
+                              children: [
+
+                                Text(
+
+                                  node.title,
+
+                                  style:
+                                  Theme.of(context)
+                                      .textTheme
+                                      .headlineSmall,
+                                ),
+
+                                const SizedBox(
+                                  height: 12,
+                                ),
+
+                                Text(
+                                  node.description,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(
+                          height: 16,
+                        ),
+
+                        // ----------------------------------------
+                        // DECISIONES
+                        // ----------------------------------------
+
+                        Expanded(
+
+                          child: ListView(
+
+                            children: engine
+                                .getAvailableDecisions()
+                                .map(
+
+                                  (decision) =>
+                                  DecisionCard(
+
+                                    decision:
+                                    decision,
+
+                                    onTap: () async {
+
+                                      final result =
+                                      engine
+                                          .executeDecision(
+                                        decision,
+                                      );
+
+                                      await showDialog(
+
+                                        context:
+                                        context,
+
+                                        builder: (_) =>
+                                            ResultDialog(
+                                              result:
+                                              result,
+                                            ),
+                                      );
+
+                                      setState(() {});
+                                    },
+                                  ),
+                            )
+                                .toList(),
+                          ),
+                        ),
+
+                        const SizedBox(
+                          height: 12,
+                        ),
+
+                        // ----------------------------------------
+                        // INFORMACIÓN DEL EQUIPO
+                        // ----------------------------------------
+
+                        Row(
+
+                          children: [
+
+                            Expanded(
+
+                              child: InfoPanel(
+
+                                title: "AP",
+
+                                value:
+                                "${team.actionPoints}/3",
+                              ),
                             ),
 
+                            const SizedBox(
+                              width: 10,
+                            ),
+
+                            Expanded(
+
+                              child: InfoPanel(
+
+                                title:
+                                "Reputación",
+
+                                value:
+                                "${team.trust}",
+                              ),
+                            ),
+
+                            const SizedBox(
+                              width: 10,
+                            ),
+
+                            Expanded(
+
+                              child: InfoPanel(
+
+                                title:
+                                "Fondos",
+
+                                value:
+                                "\$${team.money}",
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        const SizedBox(
+                          height: 12,
+                        ),
+
+                        // ----------------------------------------
+                        // FINALIZAR TURNO
+                        // ----------------------------------------
+
+                        SizedBox(
+
+                          width:
+                          double.infinity,
+
+                          child:
+                          FilledButton.icon(
+
+                            icon:
+                            const Icon(
+                              Icons.skip_next,
+                            ),
+
+                            label:
+                            const Text(
+                              "Finalizar turno",
+                            ),
+
+                            onPressed:
+                            engine.game.gamePaused
+                                ? null
+                                : () {
+
+                              engine.endTurn();
+
+                              final event =
+                              engine
+                                  .checkRandomEvent();
+
+                              if (event !=
+                                  null) {
+
+                                showDialog(
+
+                                  context:
+                                  context,
+
+                                  builder:
+                                      (_) =>
+                                      AlertDialog(
+
+                                        title:
+                                        Text(
+                                          event.title,
+                                        ),
+
+                                        content:
+                                        Text(
+                                          event.description,
+                                        ),
+                                      ),
+                                );
+                              }
+
+                              setState(
+                                    () {},
+                              );
+                            },
                           ),
-
-                        ],
-
-                      ),
-
+                        ),
+                      ],
                     ),
+                  ),
 
-                    const SizedBox(width:16),
+                  const SizedBox(
+                    width: 16,
+                  ),
 
-                    SizedBox(
+                  // ============================================
+                  // PANEL DERECHO
+                  // ============================================
 
-                      width: 320,
+                  SizedBox(
 
-                      child: Column(
+                    width: 320,
 
-                        children: [
-                          if(team.location == Location.hospital)
+                    child: Column(
+
+                      children: [
+
+                        if (
+                        team.location ==
+                            Location.hospital
+                        )
                           PatientPanel(
 
-                            patient: engine.game.patient,
-
+                            patient:
+                            engine.game.patient,
                           ),
 
-                          const SizedBox(height:16),
+                        const SizedBox(
+                          height: 16,
+                        ),
 
-                          Expanded(
+                        Expanded(
 
-                            child: EvidencePanel(
+                          child:
+                          EvidencePanel(
 
-                              teams: engine.game.teams,
-
-                            ),
-
+                            teams:
+                            engine.game.teams,
                           ),
-
-                        ],
-
-                      ),
-
+                        ),
+                      ],
                     ),
-
-                  ],
-
-                ),
-
+                  ),
+                ],
               ),
-
-            ],
-
-          ),
-
+            ),
+          ],
         ),
-
+      ),
     );
-
   }
 
+  // ============================================================
+  // DISPOSE
+  // ============================================================
+
+  @override
+  void dispose() {
+
+    _timer?.cancel();
+
+    super.dispose();
+  }
 }

@@ -15,4 +15,8 @@ class Patient {
     this.status = PatientStatus.stable,
   });
 
+  void reset() {
+    stability = 70;
+  }
+
 }
