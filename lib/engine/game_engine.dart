@@ -10,6 +10,7 @@ import '../models/game_state.dart';
 import '../models/location.dart';
 import '../models/story_node.dart';
 import '../models/team.dart';
+import '../services/campaign_progression.dart';
 import '../services/location_manager.dart';
 
 class GameEngine {
@@ -18,7 +19,7 @@ class GameEngine {
 
   final Random random = Random();
 
-  DateTime? _lastPatientDecay;
+  static const int decisionStabilityDecay = 5;
 
   GameEngine(this.game);
 
@@ -57,17 +58,6 @@ class GameEngine {
         message: "Reanuda la operación para continuar.",
       );
     }
-
-    if (checkTimeExpired()) {
-      return const DecisionResult(
-        success: false,
-        title: "Tiempo agotado",
-        message: "El tiempo disponible para la operación ha terminado.",
-      );
-    }
-
-    // El tiempo afecta al paciente progresivamente.
-    _applyPatientTimePressure();
 
     final team = currentTeam;
 
@@ -117,11 +107,18 @@ class GameEngine {
 
     } else {
 
-      // El fracaso tiene una penalización moderada.
-      // No queremos que una sola mala decisión destruya una partida.
       team.trust -= 5;
 
       decision.onFail?.call(game);
+    }
+
+// ------------------------------------------------------------
+// DESGASTE CLÍNICO POR DECISIÓN
+// ------------------------------------------------------------
+
+    if (!game.flags.patientDead) {
+
+      game.patient.modifyStability(-5);
     }
 
     // ------------------------------------------------------------
@@ -148,51 +145,6 @@ class GameEngine {
           ? decision.evidence
           : null,
     );
-  }
-
-  // ============================================================
-  // PRESIÓN TEMPORAL SOBRE EL PACIENTE
-  // ============================================================
-
-  void _applyPatientTimePressure() {
-
-    if (
-    !game.caseStarted ||
-        game.gamePaused ||
-        game.caseFinished ||
-        game.flags.patientDead
-    ) {
-      return;
-    }
-
-    final now = DateTime.now();
-
-    _lastPatientDecay ??= now;
-
-    final elapsed =
-    now.difference(_lastPatientDecay!);
-
-    // La estabilidad cae lentamente con el tiempo real.
-    //
-    // Esto evita que una partida larga tenga automáticamente
-    // que matar al paciente por cantidad de decisiones.
-    //
-    // 1 punto cada 60 segundos aproximadamente.
-
-    final minutes = elapsed.inMinutes;
-
-    if (minutes <= 0) {
-      return;
-    }
-
-    game.patient.modifyStability(-minutes);
-
-    _lastPatientDecay =
-        _lastPatientDecay!.add(
-          Duration(minutes: minutes),
-        );
-
-    checkPatientStatus();
   }
 
   // ============================================================
@@ -262,9 +214,6 @@ class GameEngine {
     game.elapsedBeforePause =
         Duration.zero;
 
-    _lastPatientDecay =
-        DateTime.now();
-
     game.caseStarted = true;
     game.gamePaused = false;
     game.timeExpired = false;
@@ -306,9 +255,6 @@ class GameEngine {
 
     game.caseStartedAt = DateTime.now();
 
-    _lastPatientDecay =
-        DateTime.now();
-
     game.gamePaused = false;
   }
 
@@ -349,9 +295,6 @@ class GameEngine {
     game.caseStartedAt =
         DateTime.now();
 
-    _lastPatientDecay =
-        DateTime.now();
-
     game.gamePaused = false;
   }
 
@@ -379,11 +322,9 @@ class GameEngine {
 
       team.evidence.clear();
 
-      team.location =
-          Location.hospital;
+      team.location = Location.hospital;
 
-      team.currentNode =
-      "EXPEDIENTE_1";
+      team.currentNode = "EXPEDIENTE_1";
     }
 
     game.roundManager.reset();
@@ -397,15 +338,12 @@ class GameEngine {
     game.elapsedBeforePause =
         Duration.zero;
 
-    _lastPatientDecay = null;
-
     game.caseStarted = false;
     game.gamePaused = false;
     game.timeExpired = false;
     game.caseFinished = false;
 
-    game.currentNodeId =
-    "EXPEDIENTE_1";
+    game.currentNodeId = "EXPEDIENTE_1";
   }
 
   // ============================================================
@@ -633,42 +571,18 @@ class GameEngine {
 
   void checkStoryProgress() {
 
-    switch (game.currentExpediente) {
+    final nextExpediente =
+    CampaignProgression.getNextExpediente(game);
 
-      case 1:
+    if (
+    nextExpediente > game.currentExpediente &&
+        nextExpediente <= 5
+    ) {
 
-        if (game.flags.exp1Complete) {
-          game.currentExpediente = 2;
-        }
+      game.currentExpediente = nextExpediente;
 
-        break;
-
-      case 2:
-
-        if (game.flags.exp2Complete) {
-          game.currentExpediente = 3;
-        }
-
-        break;
-
-      case 3:
-
-        if (game.flags.exp3Complete) {
-          game.currentExpediente = 4;
-        }
-
-        break;
-
-      case 4:
-
-        if (game.flags.exp4Complete) {
-          game.currentExpediente = 5;
-        }
-
-        break;
-
-      case 5:
-        break;
+      game.currentNodeId =
+      "EXPEDIENTE_$nextExpediente";
     }
   }
 }

@@ -112,6 +112,7 @@ class GameFlags {
   // EXPEDIENTE 4
   // ============================================================
 
+  bool exp4Integrated = false;
   bool exp4Complete = false;
 
   // ============================================================
@@ -125,6 +126,7 @@ class GameFlags {
 
   bool finalEvidenceSecured = false;
   bool exp5Complete = false;
+  bool campaignComplete = false;
 
   // ============================================================
   // RESET
@@ -217,5 +219,9 @@ class GameFlags {
 
     finalEvidenceSecured = false;
     exp5Complete = false;
+
+    exp4Integrated = false;
+
+    campaignComplete = false;
   }
 }

@@ -267,11 +267,11 @@ class _LobbyScreenState extends State<LobbyScreen> {
 
                   Slider(
 
-                    min: 60,
+                    min: 15,
 
                     max: 240,
 
-                    divisions: 12,
+                    divisions: 15,
 
                     value:
                     caseDurationMinutes
@@ -300,7 +300,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
                     children: const [
 
                       Text(
-                        "1:00",
+                        "0:15",
                       ),
 
                       Text(

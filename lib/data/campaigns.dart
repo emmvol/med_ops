@@ -43,7 +43,7 @@ const operationQuimera = Campaign(
 
     "El expediente de su caso acaba de llegar a sus manos.",
 
-    "Sus equipos, aún de diferentes áreas, deberán trabajar en conjunto para resolver este caso..",
+    "Sus equipos, aún de diferentes áreas, deberán trabajar en conjunto para resolver este caso.",
 
     "Lo primero es salvarle la vida.",
 

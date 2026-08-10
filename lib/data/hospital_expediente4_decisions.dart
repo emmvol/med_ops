@@ -105,4 +105,40 @@ final Map<String, Decision> hospitalExpediente4Decisions = {
       game.flags.exp4Complete = true;
     },
   ),
+
+  "EXP4_INTEGRATE_CASE": Decision(
+    id: "EXP4_INTEGRATE_CASE",
+    expediente: 4,
+    title: "Integrar la reconstrucción médico-legal",
+    description:
+    "Relacionar la evidencia de la escena, los hallazgos toxicológicos "
+        "y la información postmortem disponible.",
+    icon: Icons.account_tree,
+    type: DecisionType.legal,
+    location: Location.hospital,
+    repeat: DecisionRepeat.once,
+
+    apCost: 1,
+    moneyCost: 0,
+    trustChange: 20,
+    successRate: 100,
+
+    result:
+    "La integración de los hallazgos permite establecer una relación "
+        "entre la escena, la distribución de sustancias y los casos de intoxicación. "
+        "La investigación conduce hacia un almacén utilizado por la red.",
+
+    condition: (game) =>
+    game.flags.crimeSceneEvidenceFound &&
+        game.flags.autopsyCompleted &&
+        !game.flags.exp4Integrated,
+
+    onSuccess: (game) {
+      game.flags.exp4Integrated = true;
+      game.flags.exp4Complete = true;
+      game.flags.warehouseUnlocked = true;
+    },
+
+    nextNode: "EXP4_CLOSE",
+  ),
 };

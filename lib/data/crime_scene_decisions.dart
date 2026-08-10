@@ -200,10 +200,11 @@ final Map<String, Decision> crimeSceneDecisions = {
     successRate: 100,
 
     result:
-    "La investigación de campo ha terminado. El siguiente paso es intervenir "
-        "el almacén relacionado con la red.",
+    "La reconstrucción médico-legal establece una relación entre "
+        "los pacientes, la escena investigada y la cadena de distribución. "
+        "La siguiente fase será intervenir el almacén identificado.",
 
     condition: (game) =>
-    game.flags.exp4Complete,
+    game.flags.exp4Integrated,
   ),
 };

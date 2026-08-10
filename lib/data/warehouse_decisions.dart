@@ -209,5 +209,9 @@ final Map<String, Decision> warehouseDecisions = {
 
     condition: (game) =>
     game.flags.exp5Complete,
+
+    onSuccess: (game) {
+      game.flags.campaignComplete = true;
+    },
   ),
 };

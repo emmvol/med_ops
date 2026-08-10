@@ -178,4 +178,39 @@ final Map<String, Decision> raveHouseDecisions = {
     condition: (game) =>
     game.flags.exp3Complete,
   ),
+
+  "EXP3_IDENTIFY_CRIME_SCENE": Decision(
+    id: "EXP3_IDENTIFY_CRIME_SCENE",
+    expediente: 3,
+    title: "Identificar la siguiente escena",
+    description:
+    "Integrar la evidencia obtenida en el domicilio y determinar "
+        "qué lugar debe investigarse a continuación.",
+    icon: Icons.account_tree,
+    type: DecisionType.investigation,
+    location: Location.raveHouse,
+    repeat: DecisionRepeat.once,
+
+    apCost: 1,
+    moneyCost: 0,
+    trustChange: 15,
+    successRate: 100,
+
+    result:
+    "La evidencia y la reconstrucción de los hechos permiten "
+        "identificar una segunda ubicación relacionada con la distribución "
+        "de sustancias. La escena queda autorizada para investigación.",
+
+    condition: (game) =>
+    game.flags.raveHouseReconstructed &&
+        !game.flags.crimeSceneUnlocked,
+
+    onSuccess: (game) {
+      game.flags.crimeSceneLeadFound = true;
+      game.flags.crimeSceneUnlocked = true;
+      game.flags.exp3Complete = true;
+    },
+
+    nextNode: "EXP3_CLOSE",
+  ),
 };
