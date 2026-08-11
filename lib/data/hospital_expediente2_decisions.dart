@@ -215,6 +215,23 @@ final Map<String, Decision> hospitalExpediente2Decisions = {
     },
   ),
 
+  "DEC_OPEN_MINI_OPIOIDS": Decision(
+    id: "DEC_OPEN_MINI_OPIOIDS",
+    expediente: 2,
+    title: "Solicitar mini-caso opioides",
+    description: "Abrir evaluación rápida sobre sospecha de opioides.",
+    icon: Icons.local_hospital,
+    type: DecisionType.medical,
+    location: Location.hospital,
+    repeat: DecisionRepeat.once,
+    apCost: 1,
+    moneyCost: 0,
+    trustChange: 0,
+    successRate: 100,
+    result: "Se ha abierto el mini-caso de opioides.",
+    evaluationId: "MINI_CASE_OPIOIDS",
+  ),
+
   // ============================================================
   // REVISIÓN DEL CASO
   // ============================================================

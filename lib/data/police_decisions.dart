@@ -154,4 +154,20 @@ final Map<String, Decision> policeDecisions = {
       game.flags.raveHouseIdentified = true;
     },
   ),
+
+  "DEC_PAY_BRIBE_ACCESS": Decision(
+    id: "DEC_PAY_BRIBE_ACCESS",
+    expediente: 3,
+    title: "Pagar soborno para acceso",
+    description: "Pagar por acceso a evidencia privada (gana rapidez, pierde reputación).",
+    icon: Icons.monetization_on,
+    type: DecisionType.investigation,
+    location: Location.police,
+    repeat: DecisionRepeat.once,
+    apCost: 1,
+    moneyCost: -200, // convención del repo: negativo puede significar ingreso/beneficio
+    trustChange: -15,
+    successRate: 90,
+    result: "Se obtuvo acceso rápido, pero la reputación del equipo disminuyó.",
+  ),
 };
