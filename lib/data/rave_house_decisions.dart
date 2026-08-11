@@ -208,6 +208,10 @@ final Map<String, Decision> raveHouseDecisions = {
       game.flags.crimeSceneLeadFound = true;
       game.flags.crimeSceneUnlocked = true;
       game.flags.exp3Complete = true;
+      // Desbloquear evaluación integradora del expediente 3
+      if (!game.unlockedEvaluations.contains("EVAL_EXP3_INTEGRATION")) {
+        game.unlockedEvaluations.add("EVAL_EXP3_INTEGRATION");
+      }
     },
 
     nextNode: "EXP3_CLOSE",

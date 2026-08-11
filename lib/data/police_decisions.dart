@@ -152,6 +152,10 @@ final Map<String, Decision> policeDecisions = {
 
     onSuccess: (game) {
       game.flags.raveHouseIdentified = true;
+      // Desbloquear evaluación integradora del expediente 2
+      if (!game.unlockedEvaluations.contains("EVAL_EXP2_INTEGRATION")) {
+        game.unlockedEvaluations.add("EVAL_EXP2_INTEGRATION");
+      }
     },
   ),
 
