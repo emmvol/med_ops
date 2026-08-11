@@ -20,5 +20,4 @@ final decisions = {
   ...raveHouseDecisions,
 
   ...warehouseDecisions,
-
 };

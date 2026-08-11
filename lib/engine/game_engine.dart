@@ -815,11 +815,14 @@ class GameEngine {
               nextExpediente <= 5
           ) {
 
-               game.currentExpediente =
-                   nextExpediente;
+               game.currentExpediente = nextExpediente;
+               game.currentNodeId = "EXPEDIENTE_$nextExpediente";
 
-               game.currentNodeId =
-               "EXPEDIENTE_$nextExpediente";
+// Desbloquear la evaluación de integración para el nuevo expediente (llave maestra)
+               final integrationId = "EVAL_EXP${nextExpediente}_INTEGRATION";
+               if (getEvaluation(integrationId) != null) {
+                    game.unlockedEvaluations.add(integrationId);
+               }
 
                unlockFinalEvaluation(
                     nextExpediente,

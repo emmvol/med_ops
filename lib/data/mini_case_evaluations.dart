@@ -431,4 +431,82 @@ final Map<String, Evaluation> miniCaseEvaluations = {
     moneyReward: 0,
     unlockFlagOnPass: "omegaQuestionnaireUnlocked",
   ),
+
+  // MINI_CASE_BENZOS
+  "MINI_CASE_BENZOS": Evaluation(
+    id: "MINI_CASE_BENZOS",
+    expediente: 2,
+    title: "Minicaso clínico • Benzodiacepinas",
+    subtitle: "Evaluación sobre depresión del SNC y manejo del síndrome de abstinencia/intoxicación.",
+    type: EvaluationType.miniCase,
+    requiredCorrect: 3,
+    questions: [
+      EvaluationQuestion(
+        question: "Paciente somnoliento con respiración lenta tras consumo de fármacos; ¿qué antídoto es específico para benzodiacepinas?",
+        options: ["Flumazenil", "Naloxona", "Atropina", "Fisostigmina"],
+        correctIndex: 0,
+        correctMessage: "El flumazenil antagoniza receptores benzodiacepínicos en sobredosis selectas.",
+        incorrectMessage: "Naloxona es para opioides; flumazenil para benzodiacepinas.",
+        trustOnSuccess: 3,
+        trustOnFail: 2,
+      ),
+      EvaluationQuestion(
+        question: "¿Qué riesgo existe al administrar flumazenil en pacientes crónicos de benzodiacepinas?",
+        options: ["Crisis convulsivas", "Hiperglucemia", "Arritmias crónicas", "Anemia aguda"],
+        correctIndex: 0,
+        correctMessage: "El flumazenil puede precipitar convulsiones en pacientes dependientes.",
+        incorrectMessage: "Convulsiones son la complicación principal a vigilar.",
+        trustOnSuccess: 3,
+        trustOnFail: 2,
+      ),
+      EvaluationQuestion(
+        question: "Manejo general de una intoxicación por benzodiacepinas grave:",
+        options: ["Soporte ventilatorio y considerar flumazenil con precaución", "Dar glucosa oral", "Administrar antibióticos", "Aplicar diálisis de rutina"],
+        correctIndex: 0,
+        correctMessage: "Soporte de las funciones vitales es la base; flumazenil solo en casos seleccionados.",
+        incorrectMessage: "El soporte ventilatorio y cuidados intensivos son primordiales.",
+        trustOnSuccess: 3,
+        trustOnFail: 2,
+      ),
+    ],
+  ),
+
+  // MINI_CASE_POLY
+  "MINI_CASE_POLY": Evaluation(
+    id: "MINI_CASE_POLY",
+    expediente: 2,
+    title: "Minicaso clínico • Intoxicación por polisustancias",
+    subtitle: "Interpretación y manejo ante intoxicación por mezclas.",
+    type: EvaluationType.miniCase,
+    requiredCorrect: 3,
+    questions: [
+      EvaluationQuestion(
+        question: "Ante un paciente con signos mixtos (miosis + taquicardia + agitación) ¿qué debes considerar?",
+        options: ["Polisustancias y mezcla de toxíndromes", "Solo una monointoxicación", "Infección viral", "Hipotermia accidental"],
+        correctIndex: 0,
+        correctMessage: "La combinación de signos sugiere exposición a varias sustancias.",
+        incorrectMessage: "Considera poliuso y mezcla de toxíndromes.",
+        trustOnSuccess: 3,
+        trustOnFail: 2,
+      ),
+      EvaluationQuestion(
+        question: "¿Qué medida es prioritaria en polisustancias con compromiso respiratorio?",
+        options: ["Asegurar vía aérea y soporte ventilatorio", "Esperar tox screen", "Administrar estimulantes", "Dar de alta"],
+        correctIndex: 0,
+        correctMessage: "Prioriza soporte ventilatorio y ABCs.",
+        incorrectMessage: "El soporte vital no debe retrasarse por pruebas.",
+        trustOnSuccess: 3,
+        trustOnFail: 2,
+      ),
+      EvaluationQuestion(
+        question: "La interpretación de pruebas toxicológicas en polisustancias:",
+        options: ["Requiere correlación clínica", "Siempre determina causalidad", "Es irrelevante", "No se realiza nunca"],
+        correctIndex: 0,
+        correctMessage: "Las pruebas orientan pero deben integrarse a la clínica.",
+        incorrectMessage: "No atribuir causalidad sin contexto clínico.",
+        trustOnSuccess: 2,
+        trustOnFail: 1,
+      ),
+    ],
+  ),
 };
