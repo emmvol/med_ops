@@ -17,6 +17,10 @@ class GameState {
 
   final GameFlags flags;
 
+  final Set<String> completedEvaluations = {};
+
+  final Set<String> unlockedEvaluations = {};
+
   int currentExpediente = 1;
 
   String currentNodeId = "EXPEDIENTE_1";

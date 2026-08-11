@@ -10,6 +10,8 @@ class DecisionResult {
 
   final bool patientConditionChanged;
 
+  final String? evaluationId;
+
   const DecisionResult({
 
     required this.success,
@@ -21,6 +23,8 @@ class DecisionResult {
     this.evidence,
 
     this.patientConditionChanged = false,
+
+    this.evaluationId,
 
   });
 

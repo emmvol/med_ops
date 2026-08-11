@@ -1,10 +1,13 @@
 import 'dart:math';
 
+import '../data/campaign_evaluations.dart';
 import '../data/decisions.dart';
 import '../data/events.dart';
 import '../data/sample_case.dart';
 import '../models/decision.dart';
 import '../models/decision_result.dart';
+import '../models/evaluation.dart';
+import '../models/evaluation_result.dart';
 import '../models/game_event.dart';
 import '../models/game_state.dart';
 import '../models/location.dart';
@@ -144,6 +147,7 @@ class GameEngine {
       evidence: success
           ? decision.evidence
           : null,
+      evaluationId: decision.evaluationId,
     );
   }
 
@@ -218,6 +222,10 @@ class GameEngine {
     game.gamePaused = false;
     game.timeExpired = false;
     game.caseFinished = false;
+
+    unlockFinalEvaluation(
+      game.currentExpediente,
+    );
   }
 
   void pauseGame() {
@@ -299,6 +307,177 @@ class GameEngine {
   }
 
   // ============================================================
+// EVALUACIONES
+// ============================================================
+
+  Evaluation? getEvaluation(String evaluationId) {
+
+    if (campaignEvaluations.containsKey(evaluationId)) {
+      return campaignEvaluations[evaluationId];
+    }
+
+    if (finalEvaluations.containsKey(evaluationId)) {
+      return finalEvaluations[evaluationId];
+    }
+
+    return null;
+  }
+
+  EvaluationResult executeEvaluation(
+      String evaluationId,
+      List<int> answers,
+      ) {
+
+    final evaluation = getEvaluation(evaluationId);
+
+    if (evaluation == null) {
+      throw StateError(
+        "Evaluación no encontrada: $evaluationId",
+      );
+    }
+
+    if (game.completedEvaluations.contains(evaluationId)) {
+      throw StateError(
+        "La evaluación ya fue completada: $evaluationId",
+      );
+    }
+
+    if (answers.length != evaluation.questions.length) {
+      throw StateError(
+        "La evaluación requiere "
+            "${evaluation.questions.length} respuestas.",
+      );
+    }
+
+    int correct = 0;
+    int trustChange = 0;
+    int moneyChange = 0;
+
+    final List<String> evidence = [];
+
+    for (int i = 0; i < evaluation.questions.length; i++) {
+
+      final question = evaluation.questions[i];
+
+      final answer = answers[i];
+
+      if (
+      answer < 0 ||
+          answer >= question.options.length
+      ) {
+        throw StateError(
+          "Respuesta inválida en pregunta ${i + 1}.",
+        );
+      }
+
+      if (answer == question.correctIndex) {
+
+        correct++;
+
+        trustChange += question.trustOnSuccess;
+        moneyChange += question.moneyReward;
+
+        if (question.evidenceOnSuccess != null) {
+          evidence.add(
+            question.evidenceOnSuccess!,
+          );
+        }
+
+      } else {
+
+        trustChange -= question.trustOnFail;
+        moneyChange -= question.moneyPenalty;
+
+        if (question.evidenceOnFail != null) {
+          evidence.add(
+            question.evidenceOnFail!,
+          );
+        }
+      }
+    }
+
+    final bool passed =
+        correct >= evaluation.requiredCorrect;
+
+    trustChange += evaluation.trustReward;
+
+    // ------------------------------------------------------------
+    // APLICAR RESULTADOS
+    // ------------------------------------------------------------
+
+    final team = currentTeam;
+
+    team.trust += trustChange;
+    team.money += moneyChange;
+
+    for (final item in evidence) {
+      team.evidence.add(item);
+    }
+
+    // ------------------------------------------------------------
+    // DESBLOQUEO
+    // ------------------------------------------------------------
+
+    final unlockedFlag = passed
+        ? evaluation.unlockFlagOnPass
+        : evaluation.unlockFlagOnFail;
+
+    if (unlockedFlag != null) {
+      _setEvaluationUnlockFlag(unlockedFlag);
+    }
+
+    // ------------------------------------------------------------
+    // REGISTRAR EVALUACIÓN
+    // ------------------------------------------------------------
+
+    game.completedEvaluations.add(
+      evaluationId,
+    );
+
+    // ------------------------------------------------------------
+    // PROGRESIÓN
+    // ------------------------------------------------------------
+
+    checkStoryProgress();
+
+    return EvaluationResult(
+      evaluationId: evaluationId,
+      correctAnswers: correct,
+      totalQuestions: evaluation.questions.length,
+      passed: passed,
+      moneyChange: moneyChange,
+      trustChange: trustChange,
+      evidenceObtained: evidence,
+      unlockedFlag: unlockedFlag,
+    );
+  }
+
+  void _setEvaluationUnlockFlag(String flag) {
+
+    switch (flag) {
+
+      case "policeUnlocked":
+        game.flags.policeUnlocked = true;
+        break;
+
+      case "raveHouseUnlocked":
+        game.flags.raveHouseUnlocked = true;
+        break;
+
+      case "crimeSceneUnlocked":
+        game.flags.crimeSceneUnlocked = true;
+        break;
+
+      case "warehouseUnlocked":
+        game.flags.warehouseUnlocked = true;
+        break;
+
+      default:
+        break;
+    }
+  }
+
+  // ============================================================
   // RESET
   // ============================================================
 
@@ -311,6 +490,10 @@ class GameEngine {
     game.completedActions.clear();
 
     game.flags.reset();
+
+    game.completedEvaluations.clear();
+
+    game.unlockedEvaluations.clear();
 
     game.patient.reset();
 
@@ -447,6 +630,37 @@ class GameEngine {
     ).toList();
   }
 
+  List<Evaluation> getAvailableEvaluations() {
+
+    if (
+    game.caseFinished ||
+        game.gamePaused
+    ) {
+      return [];
+    }
+
+    final allEvaluations = [
+      ...campaignEvaluations.values,
+      ...finalEvaluations.values,
+    ];
+
+    return allEvaluations.where((evaluation) {
+
+      if (
+      game.completedEvaluations.contains(
+        evaluation.id,
+      )
+      ) {
+        return false;
+      }
+
+      return game.unlockedEvaluations.contains(
+        evaluation.id,
+      );
+
+    }).toList();
+  }
+
   // ============================================================
   // UBICACIONES
   // ============================================================
@@ -579,10 +793,27 @@ class GameEngine {
         nextExpediente <= 5
     ) {
 
-      game.currentExpediente = nextExpediente;
+      game.currentExpediente =
+          nextExpediente;
 
       game.currentNodeId =
       "EXPEDIENTE_$nextExpediente";
+
+      unlockFinalEvaluation(
+        nextExpediente,
+      );
     }
+  }
+
+  void unlockFinalEvaluation(int expediente) {
+
+    final id =
+        "EVAL_FINAL_EXP$expediente";
+
+    if (getEvaluation(id) == null) {
+      return;
+    }
+
+    game.unlockedEvaluations.add(id);
   }
 }

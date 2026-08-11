@@ -178,7 +178,6 @@ final Map<String, Decision> warehouseDecisions = {
 
     onSuccess: (game) {
       game.flags.finalEvidenceSecured = true;
-      game.flags.exp5Complete = true;
     },
 
     nextNode: "EXP5_FINAL_REVIEW",
@@ -212,6 +211,7 @@ final Map<String, Decision> warehouseDecisions = {
 
     onSuccess: (game) {
       game.flags.campaignComplete = true;
+      game.flags.exp5Complete = true;
     },
   ),
 };

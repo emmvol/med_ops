@@ -54,6 +54,8 @@ class Decision {
   /// Nodo narrativo opcional si la decisión falla.
   final String? failNextNode;
 
+  final String? evaluationId;
+
   const Decision({
     required this.id,
     required this.expediente,
@@ -75,6 +77,7 @@ class Decision {
     this.onFail,
     this.nextNode,
     this.failNextNode,
+    this.evaluationId,
   });
 
   bool isAvailable(GameState game) {

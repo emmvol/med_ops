@@ -143,7 +143,6 @@ final Map<String, Decision> raveHouseDecisions = {
         !game.flags.raveHouseReconstructed,
 
     onSuccess: (game) {
-      game.flags.raveHouseReconstructed = true;
       game.flags.crimeSceneLeadFound = true;
       game.flags.crimeSceneUnlocked = true;
       game.flags.exp3Complete = true;

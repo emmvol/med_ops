@@ -129,6 +129,44 @@ class GameFlags {
   bool campaignComplete = false;
 
   // ============================================================
+// EVALUACIONES
+// ============================================================
+
+  bool evalExp1IntegrationAvailable = false;
+  bool evalExp1IntegrationCompleted = false;
+  bool evalExp1FinalCompleted = false;
+
+  bool evalExp2IntegrationAvailable = false;
+  bool evalExp2IntegrationCompleted = false;
+  bool evalExp2FinalCompleted = false;
+
+  bool evalExp3IntegrationAvailable = false;
+  bool evalExp3IntegrationCompleted = false;
+  bool evalExp3FinalCompleted = false;
+
+  bool evalExp4IntegrationAvailable = false;
+  bool evalExp4IntegrationCompleted = false;
+  bool evalExp4FinalCompleted = false;
+
+  bool evalExp5FinalCompleted = false;
+
+  bool interrogationStarted = false;
+  bool interrogationCompleted = false;
+
+  bool omegaQuestionnaireUnlocked = false;
+  bool omegaQuestionnaireCompleted = false;
+  bool omegaCorrectLocationFound = false;
+  bool omegaEntryBySpecialists = false;
+
+  int interrogationQuestionsAnswered = 0;
+
+  final Set<String> completedMiniCases = {};
+
+  bool policeUnlocked = false;
+
+  bool patientAlcoholEvaluated = false;
+
+  // ============================================================
   // RESET
   // ============================================================
 
@@ -223,5 +261,37 @@ class GameFlags {
     exp4Integrated = false;
 
     campaignComplete = false;
+
+    evalExp1IntegrationAvailable = false;
+    evalExp1IntegrationCompleted = false;
+    evalExp1FinalCompleted = false;
+
+    evalExp2IntegrationAvailable = false;
+    evalExp2IntegrationCompleted = false;
+    evalExp2FinalCompleted = false;
+
+    evalExp3IntegrationAvailable = false;
+    evalExp3IntegrationCompleted = false;
+    evalExp3FinalCompleted = false;
+
+    evalExp4IntegrationAvailable = false;
+    evalExp4IntegrationCompleted = false;
+    evalExp4FinalCompleted = false;
+
+    evalExp5FinalCompleted = false;
+
+    interrogationStarted = false;
+    interrogationCompleted = false;
+
+    omegaQuestionnaireUnlocked = false;
+    omegaQuestionnaireCompleted = false;
+    omegaCorrectLocationFound = false;
+    omegaEntryBySpecialists = false;
+
+    interrogationQuestionsAnswered = 0;
+
+    policeUnlocked = false;
+
+    patientAlcoholEvaluated = false;
   }
 }

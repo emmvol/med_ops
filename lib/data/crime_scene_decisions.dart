@@ -172,9 +172,9 @@ final Map<String, Decision> crimeSceneDecisions = {
         !game.flags.warehouseUnlocked,
 
     onSuccess: (game) {
-      game.flags.warehouseLeadFound = true;
-      game.flags.warehouseUnlocked = true;
+      game.flags.exp4Integrated = true;
       game.flags.exp4Complete = true;
+      game.flags.warehouseUnlocked = true;
     },
 
     nextNode: "EXP4_CLOSE",

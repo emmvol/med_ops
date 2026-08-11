@@ -184,6 +184,37 @@ final Map<String, Decision> hospitalExpediente2Decisions = {
     nextNode: "EXP2_CASE_REVIEW",
   ),
 
+  "EXP2_PATIENT_ALCOHOL": Decision(
+    id: "EXP2_PATIENT_ALCOHOL",
+    expediente: 2,
+    title: "Ingresar paciente • Alcohol",
+    description:
+    "Ingresa un paciente con alteración del estado de conciencia "
+        "posterior a consumo importante de alcohol.",
+    icon: Icons.local_bar,
+    type: DecisionType.medical,
+    location: Location.hospital,
+    repeat: DecisionRepeat.once,
+
+    apCost: 1,
+    moneyCost: 0,
+    trustChange: 5,
+    successRate: 100,
+
+    evaluationId: "MINI_CASE_ALCOHOL",
+
+    result:
+    "El paciente requiere valoración por posible intoxicación etílica.",
+
+    condition: (game) =>
+    !game.flags.patientAlcoholEvaluated &&
+        !game.flags.patientDead,
+
+    onSuccess: (game) {
+      game.flags.patientAlcoholEvaluated = true;
+    },
+  ),
+
   // ============================================================
   // REVISIÓN DEL CASO
   // ============================================================

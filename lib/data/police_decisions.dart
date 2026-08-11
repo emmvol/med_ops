@@ -152,7 +152,6 @@ final Map<String, Decision> policeDecisions = {
 
     onSuccess: (game) {
       game.flags.raveHouseIdentified = true;
-      game.flags.raveHouseUnlocked = true;
     },
   ),
 };

@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../data/campaign_evaluations.dart';
+import '../data/mini_case_evaluations.dart';
 import '../engine/game_engine.dart';
 import '../models/game_state.dart';
 import '../models/location.dart';
@@ -10,6 +12,7 @@ import '../models/team.dart';
 
 import '../widgets/case_header.dart';
 import '../widgets/decision_card.dart';
+import '../widgets/evaluation_dialog.dart';
 import '../widgets/evidence_panel.dart';
 import '../widgets/info_panel.dart';
 import '../widgets/patient_panel.dart';
@@ -549,6 +552,35 @@ class _GameScreenState extends State<GameScreen> {
                                           .executeDecision(
                                         decision,
                                       );
+
+                                      if (result.success && result.evaluationId != null) {
+
+                                        final evaluation =
+                                        miniCaseEvaluations[result.evaluationId!];
+
+                                        if (evaluation != null) {
+
+                                          await showDialog(
+                                            context: context,
+                                            barrierDismissible: false,
+                                            builder: (_) => EvaluationDialog(
+                                              evaluation: evaluation,
+
+                                              onFinished: (
+                                                  bool success,
+                                                  String? evidence,
+                                                  ) {
+                                                if (success) {
+                                                  // Actualizar GameState después.
+                                                }
+                                              },
+                                            ),
+                                          );
+                                        }
+
+                                        setState(() {});
+                                        return;
+                                      }
 
                                       await showDialog(
 
