@@ -805,28 +805,35 @@ class GameEngine {
      // ============================================================
      // PROGRESIÓN GLOBAL
      // ============================================================
+
      void checkStoryProgress() {
 
-          final nextExpediente =
-          CampaignProgression.getNextExpediente(game);
+          // Avanzar estrictamente paso a paso: solo permite mover de expediente actual a siguiente
+          // si el siguiente está disponible según CampaignProgression.canStartExpediente.
+          int candidate = game.currentExpediente;
 
-          if (
-          nextExpediente > game.currentExpediente &&
-              nextExpediente <= 5
-          ) {
+          // Intentar avanzar secuencialmente (N -> N+1 -> ...)
+          while (CampaignProgression.canStartExpediente(game, candidate + 1) &&
+              candidate + 1 <= 5) {
+               candidate++;
+          }
 
-               game.currentExpediente = nextExpediente;
-               game.currentNodeId = "EXPEDIENTE_$nextExpediente";
+          if (candidate > game.currentExpediente) {
+               // Avanzamos hasta candidate (posible que sea current+1 o más si se cumplían iterativamente)
+               final previous = game.currentExpediente;
+               for (int next = previous + 1; next <= candidate; next++) {
+                    game.currentExpediente = next;
+                    game.currentNodeId = "EXPEDIENTE_$next";
 
-// Desbloquear la evaluación de integración para el nuevo expediente (llave maestra)
-               final integrationId = "EVAL_EXP${nextExpediente}_INTEGRATION";
-               if (getEvaluation(integrationId) != null) {
-                    game.unlockedEvaluations.add(integrationId);
+                    // Desbloquear solo la evaluación integradora del expediente que acabamos de activar
+                    final integrationId = "EVAL_EXP${next}_INTEGRATION";
+                    if (getEvaluation(integrationId) != null) {
+                         game.unlockedEvaluations.add(integrationId);
+                    }
+
+                    // También desbloquear la evaluación final del expediente si aplica
+                    unlockFinalEvaluation(next);
                }
-
-               unlockFinalEvaluation(
-                    nextExpediente,
-               );
           }
      }
 
