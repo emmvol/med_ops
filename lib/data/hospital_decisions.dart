@@ -358,11 +358,11 @@ final Map<String, Decision> hospitalDecisions = {
         !game.flags.airwaySecured,
 
     onSuccess: (game) {
-      game.patient.modifyStability(12);
+      game.patient.modifyStability(20);
     },
 
     onFail: (game) {
-      game.patient.modifyStability(-4);
+      game.patient.modifyStability(-5);
     },
   ),
 
@@ -394,11 +394,11 @@ final Map<String, Decision> hospitalDecisions = {
 
     onSuccess: (game) {
       game.flags.ivAccessObtained = true;
-      game.patient.modifyStability(10);
+      game.patient.modifyStability(15);
     },
 
     onFail: (game) {
-      game.patient.modifyStability(-3);
+      game.patient.modifyStability(-2);
     },
   ),
 
@@ -431,7 +431,7 @@ final Map<String, Decision> hospitalDecisions = {
 
     onSuccess: (game) {
       game.flags.agitationControlled = true;
-      game.patient.modifyStability(15);
+      game.patient.modifyStability(25);
     },
 
     onFail: (game) {
@@ -468,11 +468,11 @@ final Map<String, Decision> hospitalDecisions = {
 
     onSuccess: (game) {
       game.flags.airwaySecured = true;
-      game.patient.modifyStability(25);
+      game.patient.modifyStability(35);
     },
 
     onFail: (game) {
-      game.patient.modifyStability(-8);
+      game.patient.modifyStability(-4);
     },
   ),
 
