@@ -15,6 +15,9 @@ final Map<String, Evaluation> miniCaseEvaluations = {
     "Valora al paciente y selecciona la conducta inicial.",
     type: EvaluationType.miniCase,
     requiredCorrect: 3,
+    retryOnFail: true,
+
+    unlockFlagOnPass: "miniCaseAlcoholComplete",
 
     questions: [
 
@@ -91,6 +94,9 @@ final Map<String, Evaluation> miniCaseEvaluations = {
     "Identifica las prioridades ante un síndrome simpaticomimético.",
     type: EvaluationType.miniCase,
     requiredCorrect: 3,
+    retryOnFail: true,
+
+    unlockFlagOnPass: "miniCaseCocaineComplete",
 
     questions: [
 
@@ -168,6 +174,9 @@ final Map<String, Evaluation> miniCaseEvaluations = {
     "Valora los efectos clínicos y determina la conducta inicial.",
     type: EvaluationType.miniCase,
     requiredCorrect: 3,
+    retryOnFail: true,
+
+    unlockFlagOnPass: "miniCaseCannabisComplete",
 
     questions: [
 
@@ -239,6 +248,9 @@ final Map<String, Evaluation> miniCaseEvaluations = {
     "Evalúa la alteración perceptiva y el riesgo conductual.",
     type: EvaluationType.miniCase,
     requiredCorrect: 3,
+    retryOnFail: true,
+
+    unlockFlagOnPass: "miniCaseHallucinogensComplete",
 
     questions: [
 
@@ -311,6 +323,9 @@ final Map<String, Evaluation> miniCaseEvaluations = {
     "Reconoce el toxíndrome y prioriza la intervención.",
     type: EvaluationType.miniCase,
     requiredCorrect: 3,
+    retryOnFail: true,
+
+    unlockFlagOnPass: "miniCaseOpioidsComplete",
 
     questions: [
 
@@ -440,6 +455,10 @@ final Map<String, Evaluation> miniCaseEvaluations = {
     subtitle: "Evaluación sobre depresión del SNC y manejo del síndrome de abstinencia/intoxicación.",
     type: EvaluationType.miniCase,
     requiredCorrect: 3,
+    retryOnFail: true,
+
+    unlockFlagOnPass: "miniCaseBenzosComplete",
+
     questions: [
       EvaluationQuestion(
         question: "Paciente somnoliento con respiración lenta tras consumo de fármacos; ¿qué antídoto es específico para benzodiacepinas?",
@@ -479,6 +498,10 @@ final Map<String, Evaluation> miniCaseEvaluations = {
     subtitle: "Interpretación y manejo ante intoxicación por mezclas.",
     type: EvaluationType.miniCase,
     requiredCorrect: 3,
+    retryOnFail: true,
+
+    unlockFlagOnPass: "miniCasePolyComplete",
+
     questions: [
       EvaluationQuestion(
         question: "Ante un paciente con signos mixtos (miosis + taquicardia + agitación) ¿qué debes considerar?",

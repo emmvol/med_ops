@@ -556,7 +556,7 @@ class _GameScreenState extends State<GameScreen> {
                                       if (result.success && result.evaluationId != null) {
 
                                         final evaluation =
-                                        miniCaseEvaluations[result.evaluationId!];
+                                        engine.getEvaluation(result.evaluationId!);
 
                                         if (evaluation != null) {
 
@@ -565,14 +565,12 @@ class _GameScreenState extends State<GameScreen> {
                                             barrierDismissible: false,
                                             builder: (_) => EvaluationDialog(
                                               evaluation: evaluation,
-
                                               onFinished: (
                                                   bool success,
                                                   String? evidence,
                                                   ) {
-                                                if (success) {
-                                                  // Actualizar GameState después.
-                                                }
+                                                // Aquí después aplicamos el resultado
+                                                // específico de la evaluación.
                                               },
                                             ),
                                           );

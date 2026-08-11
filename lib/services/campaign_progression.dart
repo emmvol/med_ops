@@ -42,51 +42,20 @@ class CampaignProgression {
 
     switch (expediente) {
 
-    // --------------------------------------------------------
-    // EXPEDIENTE 1
-    // --------------------------------------------------------
-
       case 1:
         return true;
 
-    // --------------------------------------------------------
-    // EXPEDIENTE 2
-    // --------------------------------------------------------
-
       case 2:
-        return game.flags.exp1Complete;
-
-    // --------------------------------------------------------
-    // EXPEDIENTE 3
-    // --------------------------------------------------------
-    // NO basta con encontrar evidencia.
-    // Debe haberse completado la revisión hospitalaria
-    // y HABER IDENTIFICADO FORMALMENTE el domicilio.
+        return game.flags.evalExp1IntegrationCompleted;
 
       case 3:
-        return game.flags.exp2HospitalReviewComplete &&
-            game.flags.raveHouseIdentified &&
-            game.flags.raveHouseUnlocked;
-
-    // --------------------------------------------------------
-    // EXPEDIENTE 4
-    // --------------------------------------------------------
-    // La escena solo puede iniciar después de integrar
-    // formalmente el expediente 3.
+        return game.flags.evalExp2IntegrationCompleted;
 
       case 4:
-        return game.flags.exp3Complete &&
-            game.flags.crimeSceneUnlocked;
-
-    // --------------------------------------------------------
-    // EXPEDIENTE 5
-    // --------------------------------------------------------
-    // El almacén solo aparece después de completar
-    // la integración médico-legal del expediente 4.
+        return game.flags.evalExp3IntegrationCompleted;
 
       case 5:
-        return game.flags.exp4Complete &&
-            game.flags.warehouseUnlocked;
+        return game.flags.evalExp4IntegrationCompleted;
 
       default:
         return false;

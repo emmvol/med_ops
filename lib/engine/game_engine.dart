@@ -109,6 +109,12 @@ class GameEngine {
 
                decision.onSuccess?.call(game);
 
+               if (decision.evaluationId != null) {
+                    game.unlockedEvaluations.add(
+                         decision.evaluationId!,
+                    );
+               }
+
           } else {
 
                team.trust -= 5;
@@ -348,10 +354,14 @@ class GameEngine {
                );
           }
 
-          // Validación de longitud: permitimos respuestas parciales si maxQuestionsToAsk está definido.
-          final maxAllowed = evaluation.maxQuestionsToAsk ?? evaluation.questions.length;
+          final maxAllowed =
+              evaluation.maxQuestionsToAsk ??
+                  evaluation.questions.length;
 
-          if (answers.length == 0 || answers.length > evaluation.questions.length) {
+          if (
+          answers.isEmpty ||
+              answers.length > evaluation.questions.length
+          ) {
                throw StateError(
                     "Número de respuestas inválido.",
                );
@@ -359,7 +369,8 @@ class GameEngine {
 
           if (answers.length > maxAllowed) {
                throw StateError(
-                    "Se permiten como máximo $maxAllowed respuestas en esta evaluación.",
+                    "Se permiten como máximo $maxAllowed respuestas "
+                        "en esta evaluación.",
                );
           }
 
@@ -369,7 +380,10 @@ class GameEngine {
 
           final List<String> evidence = [];
 
-          // Evaluar únicamente las preguntas contestadas (asumimos que answers[i] corresponde a question i)
+          // ------------------------------------------------------------
+          // EVALUAR RESPUESTAS
+          // ------------------------------------------------------------
+
           for (int i = 0; i < answers.length; i++) {
 
                final question = evaluation.questions[i];
@@ -389,8 +403,11 @@ class GameEngine {
 
                     correct++;
 
-                    trustChange += question.trustOnSuccess;
-                    moneyChange += question.moneyReward;
+                    trustChange +=
+                        question.trustOnSuccess;
+
+                    moneyChange +=
+                        question.moneyReward;
 
                     if (question.evidenceOnSuccess != null) {
                          evidence.add(
@@ -400,8 +417,11 @@ class GameEngine {
 
                } else {
 
-                    trustChange -= question.trustOnFail;
-                    moneyChange -= question.moneyPenalty;
+                    trustChange -=
+                        question.trustOnFail;
+
+                    moneyChange -=
+                        question.moneyPenalty;
 
                     if (question.evidenceOnFail != null) {
                          evidence.add(
@@ -414,8 +434,15 @@ class GameEngine {
           final bool passed =
               correct >= evaluation.requiredCorrect;
 
-          trustChange += evaluation.trustReward;
-          moneyChange += evaluation.moneyReward;
+          // ------------------------------------------------------------
+          // RECOMPENSAS GLOBALES
+          // ------------------------------------------------------------
+
+          if (passed) {
+               _markIntegrationCompleted(evaluationId);
+               trustChange += evaluation.trustReward;
+               moneyChange += evaluation.moneyReward;
+          }
 
           // ------------------------------------------------------------
           // APLICAR RESULTADOS
@@ -426,35 +453,67 @@ class GameEngine {
           team.trust += trustChange;
           team.money += moneyChange;
 
-          for (final item in evidence) {
-               team.evidence.add(item);
+          // ------------------------------------------------------------
+          // EVIDENCIA
+          //
+          // La evidencia de preguntas solo se conserva si la evaluación
+          // fue aprobada.
+          // ------------------------------------------------------------
+
+          if (passed) {
+
+               for (final item in evidence) {
+                    team.evidence.add(item);
+               }
           }
 
           // ------------------------------------------------------------
-          // DESBLOQUEO
+          // FLAGS
+          //
+          // Solo una evaluación aprobada entrega el flag de éxito.
           // ------------------------------------------------------------
 
-          final unlockedFlag = passed
-              ? evaluation.unlockFlagOnPass
-              : evaluation.unlockFlagOnFail;
+          String? unlockedFlag;
+
+          if (passed) {
+
+               unlockedFlag =
+                   evaluation.unlockFlagOnPass;
+
+          } else {
+
+               unlockedFlag =
+                   evaluation.unlockFlagOnFail;
+          }
 
           if (unlockedFlag != null) {
-               _setEvaluationUnlockFlag(unlockedFlag);
+               _setEvaluationUnlockFlag(
+                    unlockedFlag,
+               );
           }
 
           // ------------------------------------------------------------
           // REGISTRAR EVALUACIÓN
           // ------------------------------------------------------------
 
-          game.completedEvaluations.add(
-               evaluationId,
-          );
+          if (passed) {
+               game.completedEvaluations.add(evaluationId);
+          }
 
-          // Penalización en caso de fallo: coste de oportunidad.
-          // Consumir las acciones restantes del equipo y avanzar turno.
+          // ------------------------------------------------------------
+          // FALLO
+          //
+          // El minicaso se cierra.
+          // No se reabre automáticamente.
+          //
+          // El turno se consume como consecuencia del fallo.
+          // La decisión que vuelva a abrir el minicaso deberá pagar
+          // nuevamente su AP.
+          // ------------------------------------------------------------
+
           if (!passed) {
+
                currentTeam.actionPoints = 0;
-               nextTurn();
           }
 
           // ------------------------------------------------------------
@@ -470,9 +529,37 @@ class GameEngine {
                passed: passed,
                moneyChange: moneyChange,
                trustChange: trustChange,
-               evidenceObtained: evidence,
+               evidenceObtained:
+               passed ? evidence : [],
                unlockedFlag: unlockedFlag,
           );
+     }
+
+     void _markIntegrationCompleted(String evaluationId) {
+
+          switch (evaluationId) {
+
+               case "EVAL_EXP1_INTEGRATION":
+                    game.flags.evalExp1IntegrationCompleted = true;
+                    game.flags.exp1Complete = true;
+                    break;
+
+               case "EVAL_EXP2_INTEGRATION":
+                    game.flags.evalExp2IntegrationCompleted = true;
+                    game.flags.exp2Complete = true;
+                    break;
+
+               case "EVAL_EXP3_INTEGRATION":
+                    game.flags.evalExp3IntegrationCompleted = true;
+                    game.flags.exp3Complete = true;
+                    break;
+
+               case "EVAL_EXP4_INTEGRATION":
+                    game.flags.evalExp4IntegrationCompleted = true;
+                    game.flags.exp4Integrated = true;
+                    game.flags.exp4Complete = true;
+                    break;
+          }
      }
 
      void _setEvaluationUnlockFlag(String flag) {
@@ -670,21 +757,22 @@ class GameEngine {
                ...miniCaseEvaluations.values,
           ];
 
-          return allEvaluations.where((evaluation) {
+          return allEvaluations.where(
+                   (evaluation) {
 
-               if (
-               game.completedEvaluations.contains(
-                    evaluation.id,
-               )
-               ) {
-                    return false;
-               }
+                    if (
+                    game.completedEvaluations.contains(
+                         evaluation.id,
+                    )
+                    ) {
+                         return false;
+                    }
 
-               return game.unlockedEvaluations.contains(
-                    evaluation.id,
-               );
-
-          }).toList();
+                    return game.unlockedEvaluations.contains(
+                         evaluation.id,
+                    );
+               },
+          ).toList();
      }
 
      // ============================================================
@@ -808,32 +896,28 @@ class GameEngine {
 
      void checkStoryProgress() {
 
-          // Avanzar estrictamente paso a paso: solo permite mover de expediente actual a siguiente
-          // si el siguiente está disponible según CampaignProgression.canStartExpediente.
           int candidate = game.currentExpediente;
 
-          // Intentar avanzar secuencialmente (N -> N+1 -> ...)
-          while (CampaignProgression.canStartExpediente(game, candidate + 1) &&
-              candidate + 1 <= 5) {
+          while (
+          candidate < 5 &&
+              CampaignProgression.canStartExpediente(
+                   game,
+                   candidate + 1,
+              )
+          ) {
                candidate++;
-          }
 
-          if (candidate > game.currentExpediente) {
-               // Avanzamos hasta candidate (posible que sea current+1 o más si se cumplían iterativamente)
-               final previous = game.currentExpediente;
-               for (int next = previous + 1; next <= candidate; next++) {
-                    game.currentExpediente = next;
-                    game.currentNodeId = "EXPEDIENTE_$next";
+               game.currentExpediente = candidate;
+               game.currentNodeId = "EXPEDIENTE_$candidate";
 
-                    // Desbloquear solo la evaluación integradora del expediente que acabamos de activar
-                    final integrationId = "EVAL_EXP${next}_INTEGRATION";
-                    if (getEvaluation(integrationId) != null) {
-                         game.unlockedEvaluations.add(integrationId);
-                    }
+               final integrationId =
+                   "EVAL_EXP${candidate}_INTEGRATION";
 
-                    // También desbloquear la evaluación final del expediente si aplica
-                    unlockFinalEvaluation(next);
+               if (getEvaluation(integrationId) != null) {
+                    game.unlockedEvaluations.add(integrationId);
                }
+
+               unlockFinalEvaluation(candidate);
           }
      }
 

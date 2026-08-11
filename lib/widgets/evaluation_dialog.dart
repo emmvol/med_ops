@@ -80,7 +80,7 @@ class _EvaluationDialogState
   void continueQuestion() {
 
     // ----------------------------------------------------------
-    // EVALUACIÓN COMPLETADA
+    // EVALUACIÓN APROBADA
     // ----------------------------------------------------------
 
     if (
@@ -99,21 +99,17 @@ class _EvaluationDialogState
     }
 
     // ----------------------------------------------------------
-    // SI FALLÓ
+    // EVALUACIÓN FALLIDA
     // ----------------------------------------------------------
 
     if (!lastAnswerCorrect) {
 
-      setState(() {
+      widget.onFinished(
+        false,
+        question.evidenceOnFail,
+      );
 
-        currentQuestion = 0;
-
-        selectedOption = null;
-
-        answered = false;
-
-        lastAnswerCorrect = false;
-      });
+      Navigator.pop(context);
 
       return;
     }
@@ -142,19 +138,15 @@ class _EvaluationDialogState
     }
 
     // ----------------------------------------------------------
-    // VOLVER A LA PRIMERA PREGUNTA
+    // SE TERMINARON LAS PREGUNTAS SIN APROBAR
     // ----------------------------------------------------------
 
-    setState(() {
+    widget.onFinished(
+      false,
+      null,
+    );
 
-      currentQuestion = 0;
-
-      selectedOption = null;
-
-      answered = false;
-
-      lastAnswerCorrect = false;
-    });
+    Navigator.pop(context);
   }
 
   // ============================================================

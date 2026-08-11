@@ -7,262 +7,257 @@ import '../models/location.dart';
 final Map<String, Decision> hospitalExpediente2Decisions = {
 
   // ============================================================
-  // PACIENTE SECUNDARIO
+  // MINICASO • ALCOHOL
   // ============================================================
 
-  "EXP2_RECEIVE_PATIENT": Decision(
-    id: "EXP2_RECEIVE_PATIENT",
+  "EXP2_OPEN_MINI_ALCOHOL": Decision(
+    id: "EXP2_OPEN_MINI_ALCOHOL",
     expediente: 2,
-    title: "Recibir nuevo paciente",
+    title: "Evaluar intoxicación por alcohol",
     description:
-    "Ingresa un paciente de aproximadamente 24 años procedente de la misma zona donde fue localizado el paciente índice.",
-    icon: Icons.emergency,
-    type: DecisionType.medical,
-    location: Location.hospital,
-    repeat: DecisionRepeat.once,
-
-    // El costo se paga al iniciar la atención del paciente.
-    apCost: 1,
-
-    moneyCost: 0,
-    trustChange: 5,
-    successRate: 100,
-
-    result:
-    "El paciente presenta diaforesis, taquicardia, hipertensión, midriasis y agitación psicomotriz. Refiere haber consumido una sustancia durante una fiesta.",
-
-    condition: (game) =>
-    !game.flags.secondaryPatientArrived &&
-        !game.flags.patientDead,
-
-    onSuccess: (game) {
-      game.flags.secondaryPatientArrived = true;
-    },
-
-    nextNode: "EXP2_SECONDARY_MANAGEMENT",
-  ),
-
-  // ============================================================
-  // MANEJO DEL PACIENTE SECUNDARIO
-  // ============================================================
-
-  "EXP2_SECONDARY_MANAGEMENT": Decision(
-    id: "EXP2_SECONDARY_MANAGEMENT",
-    expediente: 2,
-    title: "Manejo del síndrome tóxico",
-    description:
-    "TA 150/70 mmHg, FC 128 lpm, diaforesis, midriasis y agitación psicomotriz. ¿Cuál es la conducta inicial más adecuada?",
-    icon: Icons.medical_services,
-    type: DecisionType.medical,
-    location: Location.hospital,
-    repeat: DecisionRepeat.once,
-
-    apCost: 0,
-    moneyCost: 100,
-    trustChange: 10,
-    successRate: 100,
-
-    result:
-    "Se inicia monitorización, reducción de estímulos y tratamiento sintomático. La frecuencia cardiaca y la agitación disminuyen progresivamente.",
-
-    condition: (game) =>
-    game.flags.secondaryPatientArrived &&
-        !game.flags.secondaryPatientResolved &&
-        !game.flags.patientDead,
-
-    onSuccess: (game) {
-      game.flags.secondaryPatientResolved = true;
-      game.flags.secondaryVitalsTaken = true;
-    },
-
-    nextNode: "EXP2_SECONDARY_REASSESSMENT",
-  ),
-
-  // ============================================================
-  // REVALORACIÓN
-  // ============================================================
-
-  "EXP2_SECONDARY_REASSESSMENT": Decision(
-    id: "EXP2_SECONDARY_REASSESSMENT",
-    expediente: 2,
-    title: "Revalorar al paciente",
-    description:
-    "Después del manejo inicial, reevaluar estado neurológico, signos vitales y evolución clínica.",
-    icon: Icons.monitor_heart,
-    type: DecisionType.medical,
-    location: Location.hospital,
-    repeat: DecisionRepeat.once,
-
-    apCost: 0,
-    moneyCost: 0,
-    trustChange: 5,
-    successRate: 100,
-
-    result:
-    "El paciente presenta mejoría clínica. Durante la entrevista refiere que otras personas que consumieron la misma sustancia también comenzaron a presentar síntomas.",
-
-    condition: (game) =>
-    game.flags.secondaryPatientResolved &&
-        !game.flags.secondaryReassessed,
-
-    onSuccess: (game) {
-      game.flags.secondaryReassessed = true;
-    },
-
-    nextNode: "EXP2_SPECIAL_PATIENT",
-  ),
-
-  // ============================================================
-  // PACIENTE GRAVE
-  // ============================================================
-
-  "EXP2_SPECIAL_PATIENT": Decision(
-    id: "EXP2_SPECIAL_PATIENT",
-    expediente: 2,
-    title: "Atender paciente grave",
-    description:
-    "Ingresa otro paciente del mismo grupo. Presenta alteración del estado de conciencia, hipertermia y deterioro progresivo.",
-    icon: Icons.personal_injury,
-    type: DecisionType.medical,
-    location: Location.hospital,
-    repeat: DecisionRepeat.once,
-
-    apCost: 1,
-    moneyCost: 0,
-    trustChange: 5,
-    successRate: 100,
-
-    result:
-    "El paciente presenta deterioro neurológico, hipertermia y alteraciones autonómicas. Sus acompañantes refieren que varias personas consumieron la misma sustancia.",
-
-    condition: (game) =>
-    game.flags.secondaryReassessed &&
-        !game.flags.specialPatientArrived,
-
-    onSuccess: (game) {
-      game.flags.specialPatientArrived = true;
-    },
-
-    nextNode: "EXP2_SPECIAL_MANAGEMENT",
-  ),
-
-  // ============================================================
-  // PACIENTE GRAVE — DECISIÓN CRÍTICA
-  // ============================================================
-
-  "EXP2_SPECIAL_MANAGEMENT": Decision(
-    id: "EXP2_SPECIAL_MANAGEMENT",
-    expediente: 2,
-    title: "Priorizar manejo del paciente grave",
-    description:
-    "El paciente presenta hipertermia, alteración del estado de conciencia y deterioro progresivo. Selecciona la intervención prioritaria.",
-    icon: Icons.monitor_heart,
-    type: DecisionType.medical,
-    location: Location.hospital,
-    repeat: DecisionRepeat.once,
-
-    apCost: 0,
-    moneyCost: 200,
-    trustChange: 15,
-    successRate: 100,
-
-    result:
-    "El paciente responde al manejo inicial y queda bajo vigilancia estrecha. Antes de mejorar, refiere que la sustancia fue entregada por una persona a quien llamaban únicamente \"Quimera\".",
-
-    condition: (game) =>
-    game.flags.specialPatientArrived &&
-        !game.flags.specialPatientResolved &&
-        !game.flags.patientDead,
-
-    onSuccess: (game) {
-      game.flags.specialPatientResolved = true;
-      game.flags.knowsAlias = true;
-    },
-
-    evidence: "Referencia al nombre \"Quimera\"",
-
-    nextNode: "EXP2_CASE_REVIEW",
-  ),
-
-  "EXP2_PATIENT_ALCOHOL": Decision(
-    id: "EXP2_PATIENT_ALCOHOL",
-    expediente: 2,
-    title: "Ingresar paciente • Alcohol",
-    description:
-    "Ingresa un paciente con alteración del estado de conciencia "
+    "Valorar a un paciente con alteración del estado de conciencia "
         "posterior a consumo importante de alcohol.",
     icon: Icons.local_bar,
     type: DecisionType.medical,
     location: Location.hospital,
+
+    // IMPORTANTE: ya no es repetible desde la decisión.
     repeat: DecisionRepeat.once,
 
-    apCost: 1,
-    moneyCost: 0,
-    trustChange: 5,
-    successRate: 100,
-
-    evaluationId: "MINI_CASE_ALCOHOL",
-
-    result:
-    "El paciente requiere valoración por posible intoxicación etílica.",
-
-    condition: (game) =>
-    !game.flags.patientAlcoholEvaluated &&
-        !game.flags.patientDead,
-
-    onSuccess: (game) {
-      game.flags.patientAlcoholEvaluated = true;
-    },
-  ),
-
-  "DEC_OPEN_MINI_OPIOIDS": Decision(
-    id: "DEC_OPEN_MINI_OPIOIDS",
-    expediente: 2,
-    title: "Solicitar mini-caso opioides",
-    description: "Abrir evaluación rápida sobre sospecha de opioides.",
-    icon: Icons.local_hospital,
-    type: DecisionType.medical,
-    location: Location.hospital,
-    repeat: DecisionRepeat.once,
     apCost: 1,
     moneyCost: 0,
     trustChange: 0,
     successRate: 100,
-    result: "Se ha abierto el mini-caso de opioides.",
-    evaluationId: "MINI_CASE_OPIOIDS",
+
+    result:
+    "Se ha abierto el minicaso de intoxicación por alcohol.",
+
+    evaluationId: "MINI_CASE_ALCOHOL",
+
+    condition: (game) =>
+    !game.flags.miniCaseAlcoholComplete,
   ),
 
   // ============================================================
-  // REVISIÓN DEL CASO
+  // MINICASO • COCAÍNA
   // ============================================================
 
-  "EXP2_CASE_REVIEW": Decision(
-    id: "EXP2_CASE_REVIEW",
+  "EXP2_OPEN_MINI_COCAINE": Decision(
+    id: "EXP2_OPEN_MINI_COCAINE",
     expediente: 2,
-    title: "Integrar los hallazgos",
+    title: "Evaluar intoxicación por cocaína",
     description:
-    "Comparar la evolución de los pacientes y determinar si existe un patrón común.",
+    "Valorar a un paciente con agitación, diaforesis, "
+        "midriasis, taquicardia e hipertensión posterior al "
+        "consumo de una sustancia estimulante.",
+    icon: Icons.bolt,
+    type: DecisionType.medical,
+    location: Location.hospital,
+
+    repeat: DecisionRepeat.once,
+
+    apCost: 1,
+    moneyCost: 0,
+    trustChange: 0,
+    successRate: 100,
+
+    result:
+    "Se ha abierto el minicaso de intoxicación por cocaína.",
+
+    evaluationId: "MINI_CASE_COCAINE",
+
+    condition: (game) =>
+    !game.flags.miniCaseCocaineComplete,
+  ),
+
+  // ============================================================
+  // MINICASO • CANNABIS
+  // ============================================================
+
+  "EXP2_OPEN_MINI_CANNABIS": Decision(
+    id: "EXP2_OPEN_MINI_CANNABIS",
+    expediente: 2,
+    title: "Evaluar intoxicación por cannabis",
+    description:
+    "Valorar a un paciente con ansiedad, alteración de la "
+        "percepción y taquicardia posterior al consumo de cannabis.",
+    icon: Icons.grass,
+    type: DecisionType.medical,
+    location: Location.hospital,
+
+    repeat: DecisionRepeat.once,
+
+    apCost: 1,
+    moneyCost: 0,
+    trustChange: 0,
+    successRate: 100,
+
+    result:
+    "Se ha abierto el minicaso de intoxicación por cannabis.",
+
+    evaluationId: "MINI_CASE_CANNABIS",
+
+    condition: (game) =>
+    !game.flags.miniCaseCannabisComplete,
+  ),
+
+  // ============================================================
+  // MINICASO • ALUCINÓGENOS
+  // ============================================================
+
+  "EXP2_OPEN_MINI_HALLUCINOGENS": Decision(
+    id: "EXP2_OPEN_MINI_HALLUCINOGENS",
+    expediente: 2,
+    title: "Evaluar intoxicación por alucinógenos",
+    description:
+    "Valorar a un paciente con alteraciones perceptivas, "
+        "alucinaciones, ansiedad y midriasis después del consumo "
+        "de una sustancia.",
+    icon: Icons.visibility,
+    type: DecisionType.medical,
+    location: Location.hospital,
+
+    repeat: DecisionRepeat.once,
+
+    apCost: 1,
+    moneyCost: 0,
+    trustChange: 0,
+    successRate: 100,
+
+    result:
+    "Se ha abierto el minicaso de intoxicación por alucinógenos.",
+
+    evaluationId: "MINI_CASE_HALLUCINOGENS",
+
+    condition: (game) =>
+    !game.flags.miniCaseHallucinogensComplete,
+  ),
+
+  // ============================================================
+  // MINICASO • OPIOIDES
+  // ============================================================
+
+  "EXP2_OPEN_MINI_OPIOIDS": Decision(
+    id: "EXP2_OPEN_MINI_OPIOIDS",
+    expediente: 2,
+    title: "Evaluar intoxicación por opioides",
+    description:
+    "Valorar a un paciente con alteración del estado de conciencia, "
+        "miosis y depresión respiratoria posterior al consumo de una sustancia.",
+    icon: Icons.local_hospital,
+    type: DecisionType.medical,
+    location: Location.hospital,
+
+    repeat: DecisionRepeat.once,
+
+    apCost: 1,
+    moneyCost: 0,
+    trustChange: 0,
+    successRate: 100,
+
+    result:
+    "Se ha abierto el minicaso de intoxicación por opioides.",
+
+    evaluationId: "MINI_CASE_OPIOIDS",
+
+    condition: (game) =>
+    !game.flags.miniCaseOpioidsComplete,
+  ),
+
+  // ============================================================
+  // MINICASO • BENZODIACEPINAS
+  // ============================================================
+
+  "EXP2_OPEN_MINI_BENZOS": Decision(
+    id: "EXP2_OPEN_MINI_BENZOS",
+    expediente: 2,
+    title: "Evaluar intoxicación por benzodiacepinas",
+    description:
+    "Valorar a un paciente con somnolencia y depresión del "
+        "sistema nervioso central posterior al consumo de fármacos.",
+    icon: Icons.medication,
+    type: DecisionType.medical,
+    location: Location.hospital,
+
+    repeat: DecisionRepeat.once,
+
+    apCost: 1,
+    moneyCost: 0,
+    trustChange: 0,
+    successRate: 100,
+
+    result:
+    "Se ha abierto el minicaso de intoxicación por benzodiacepinas.",
+
+    evaluationId: "MINI_CASE_BENZOS",
+
+    condition: (game) =>
+    !game.flags.miniCaseBenzosComplete,
+  ),
+
+  // ============================================================
+  // MINICASO • POLISUSTANCIAS
+  // ============================================================
+
+  "EXP2_OPEN_MINI_POLY": Decision(
+    id: "EXP2_OPEN_MINI_POLY",
+    expediente: 2,
+    title: "Evaluar intoxicación por polisustancias",
+    description:
+    "Valorar a un paciente con signos clínicos mixtos "
+        "compatibles con exposición a múltiples sustancias.",
+    icon: Icons.warning_amber,
+    type: DecisionType.medical,
+    location: Location.hospital,
+
+    repeat: DecisionRepeat.once,
+
+    apCost: 1,
+    moneyCost: 0,
+    trustChange: 0,
+    successRate: 100,
+
+    result:
+    "Se ha abierto el minicaso de intoxicación por polisustancias.",
+
+    evaluationId: "MINI_CASE_POLY",
+
+    condition: (game) =>
+    !game.flags.miniCasePolyComplete,
+  ),
+
+  "EXP2_OPEN_INTEGRATION": Decision(
+    id: "EXP2_OPEN_INTEGRATION",
+    expediente: 2,
+    title: "Integrar los casos clínicos",
+    description:
+    "Comparar los hallazgos de los pacientes y determinar "
+        "si la información reunida permite establecer una línea "
+        "de investigación común.",
     icon: Icons.fact_check,
     type: DecisionType.investigation,
     location: Location.hospital,
+
     repeat: DecisionRepeat.once,
 
     apCost: 0,
     moneyCost: 0,
-    trustChange: 8,
+    trustChange: 0,
     successRate: 100,
 
     result:
-    "Los pacientes presentan cuadros compatibles con una exposición común. La información reunida justifica ampliar la investigación y solicitar colaboración policial.",
+    "Se ha abierto la evaluación de integración del expediente.",
+
+    evaluationId: "EVAL_EXP2_INTEGRATION",
 
     condition: (game) =>
-    game.flags.specialPatientResolved &&
+    game.flags.miniCaseAlcoholComplete &&
+        game.flags.miniCaseCocaineComplete &&
+        game.flags.miniCaseCannabisComplete &&
+        game.flags.miniCaseHallucinogensComplete &&
+        game.flags.miniCaseOpioidsComplete &&
+        game.flags.miniCaseBenzosComplete &&
+        game.flags.miniCasePolyComplete &&
         !game.flags.exp2HospitalReviewComplete,
-
-    onSuccess: (game) {
-      game.flags.exp2HospitalReviewComplete = true;
-    },
-
-    nextNode: "CALL_POLICE",
   ),
 };

@@ -166,6 +166,14 @@ class GameFlags {
 
   bool patientAlcoholEvaluated = false;
 
+  bool miniCaseAlcoholComplete = false;
+  bool miniCaseCocaineComplete = false;
+  bool miniCaseCannabisComplete = false;
+  bool miniCaseHallucinogensComplete = false;
+  bool miniCaseOpioidsComplete = false;
+  bool miniCaseBenzosComplete = false;
+  bool miniCasePolyComplete = false;
+
   // ============================================================
   // RESET
   // ============================================================
@@ -293,5 +301,13 @@ class GameFlags {
     policeUnlocked = false;
 
     patientAlcoholEvaluated = false;
+
+    miniCaseAlcoholComplete = false;
+    miniCaseCocaineComplete = false;
+    miniCaseCannabisComplete = false;
+    miniCaseHallucinogensComplete = false;
+    miniCaseOpioidsComplete = false;
+    miniCaseBenzosComplete = false;
+    miniCasePolyComplete = false;
   }
 }

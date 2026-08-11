@@ -14,26 +14,21 @@ class Evaluation {
   final EvaluationType type;
   final List<EvaluationQuestion> questions;
 
-  /// Número mínimo de respuestas correctas para aprobar.
   final int requiredCorrect;
 
-  /// Máximo número de preguntas que el jugador puede seleccionar/contestar
-  /// en evaluaciones tipo interrogatorio (por ejemplo: 3 de 5).
   final int? maxQuestionsToAsk;
 
-  /// Flag que se desbloquea al aprobar.
-  /// Ejemplo: "raveHouseUnlocked"
   final String? unlockFlagOnPass;
 
-  /// Flag que se desbloquea al fallar.
-  /// Normalmente null.
   final String? unlockFlagOnFail;
 
-  /// Dinero obtenido al aprobar.
   final int moneyReward;
 
-  /// Reputación obtenida al aprobar.
   final int trustReward;
+
+  /// Si es true, fallar cierra la evaluación, pero permite
+  /// volver a abrirla mediante la decisión que la desencadena.
+  final bool retryOnFail;
 
   const Evaluation({
     required this.id,
@@ -48,5 +43,6 @@ class Evaluation {
     this.unlockFlagOnFail,
     this.moneyReward = 0,
     this.trustReward = 0,
+    this.retryOnFail = false,
   });
 }
