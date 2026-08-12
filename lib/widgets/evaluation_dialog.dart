@@ -1,47 +1,38 @@
 import 'package:flutter/material.dart';
-
 import '../models/evaluation.dart';
 import '../models/evaluation_question.dart';
 
 class EvaluationDialog extends StatefulWidget {
-
   final Evaluation evaluation;
 
+  // CAMBIO: Ahora devuelve la lista de índices seleccionados por el usuario
   final void Function(
       bool success,
-      String? evidence,
+      List<int> answers,
       ) onFinished;
 
   final VoidCallback? onClose;
 
   const EvaluationDialog({
-
     super.key,
-
     required this.evaluation,
-
     required this.onFinished,
-
     this.onClose,
   });
 
   @override
-  State<EvaluationDialog> createState() =>
-      _EvaluationDialogState();
+  State<EvaluationDialog> createState() => _EvaluationDialogState();
 }
 
-class _EvaluationDialogState
-    extends State<EvaluationDialog> {
-
+class _EvaluationDialogState extends State<EvaluationDialog> {
   int currentQuestion = 0;
-
   int consecutiveCorrect = 0;
-
   int? selectedOption;
-
   bool answered = false;
-
   bool lastAnswerCorrect = false;
+
+  // NUEVO: Almacena las respuestas para enviarlas al motor al finalizar
+  final List<int> _userAnswers = [];
 
   EvaluationQuestion get question =>
       widget.evaluation.questions[currentQuestion];
@@ -51,18 +42,17 @@ class _EvaluationDialogState
   // ============================================================
 
   void answer() {
-
     if (selectedOption == null || answered) {
       return;
     }
 
-    final correct =
-        selectedOption == question.correctIndex;
+    // Guardamos la respuesta seleccionada antes de evaluar
+    _userAnswers.add(selectedOption!);
+
+    final correct = selectedOption == question.correctIndex;
 
     setState(() {
-
       answered = true;
-
       lastAnswerCorrect = correct;
 
       if (correct) {
@@ -78,74 +68,41 @@ class _EvaluationDialogState
   // ============================================================
 
   void continueQuestion() {
-
     // ----------------------------------------------------------
     // EVALUACIÓN APROBADA
     // ----------------------------------------------------------
-
-    if (
-    consecutiveCorrect >=
-        widget.evaluation.requiredCorrect
-    ) {
-
-      widget.onFinished(
-        true,
-        question.evidenceOnSuccess,
-      );
-
+    if (consecutiveCorrect >= widget.evaluation.requiredCorrect) {
+      widget.onFinished(true, _userAnswers);
       Navigator.pop(context);
-
       return;
     }
 
     // ----------------------------------------------------------
     // EVALUACIÓN FALLIDA
     // ----------------------------------------------------------
-
     if (!lastAnswerCorrect) {
-
-      widget.onFinished(
-        false,
-        question.evidenceOnFail,
-      );
-
+      widget.onFinished(false, _userAnswers);
       Navigator.pop(context);
-
       return;
     }
 
     // ----------------------------------------------------------
     // SIGUIENTE PREGUNTA
     // ----------------------------------------------------------
-
-    if (
-    currentQuestion + 1 <
-        widget.evaluation.questions.length
-    ) {
-
+    if (currentQuestion + 1 < widget.evaluation.questions.length) {
       setState(() {
-
         currentQuestion++;
-
         selectedOption = null;
-
         answered = false;
-
         lastAnswerCorrect = false;
       });
-
       return;
     }
 
     // ----------------------------------------------------------
     // SE TERMINARON LAS PREGUNTAS SIN APROBAR
     // ----------------------------------------------------------
-
-    widget.onFinished(
-      false,
-      null,
-    );
-
+    widget.onFinished(false, _userAnswers);
     Navigator.pop(context);
   }
 
@@ -155,239 +112,99 @@ class _EvaluationDialogState
 
   @override
   Widget build(BuildContext context) {
-
     final progress =
-        (currentQuestion + 1) /
-            widget.evaluation.questions.length;
+        (currentQuestion + 1) / widget.evaluation.questions.length;
 
     return PopScope(
       canPop: false,
-
       child: AlertDialog(
-
         title: Row(
-
           children: [
-
-            const Icon(
-              Icons.assignment_turned_in,
-            ),
-
-            const SizedBox(
-              width: 10,
-            ),
-
+            const Icon(Icons.assignment_turned_in),
+            const SizedBox(width: 10),
             Expanded(
-              child: Text(
-                widget.evaluation.title,
-              ),
+              child: Text(widget.evaluation.title),
             ),
           ],
         ),
-
         content: SizedBox(
-
           width: 600,
-
           child: SingleChildScrollView(
-
             child: Column(
-
-              crossAxisAlignment:
-              CrossAxisAlignment.start,
-
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
                 Text(
                   widget.evaluation.subtitle,
-
-                  style:
-                  Theme.of(context)
-                      .textTheme
-                      .bodyMedium,
+                  style: Theme.of(context).textTheme.bodyMedium,
                 ),
-
-                const SizedBox(
-                  height: 16,
-                ),
-
-                // ------------------------------------------------
-                // PROGRESO
-                // ------------------------------------------------
-
-                LinearProgressIndicator(
-                  value: progress,
-                ),
-
-                const SizedBox(
-                  height: 8,
-                ),
-
+                const SizedBox(height: 16),
+                LinearProgressIndicator(value: progress),
+                const SizedBox(height: 8),
                 Row(
-
-                  mainAxisAlignment:
-                  MainAxisAlignment.spaceBetween,
-
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-
                     Text(
-                      "Pregunta ${currentQuestion + 1}"
-                          " de "
-                          "${widget.evaluation.questions.length}",
+                      "Pregunta ${currentQuestion + 1} de ${widget.evaluation.questions.length}",
                     ),
-
                     Text(
-                      "Aciertos consecutivos: "
-                          "$consecutiveCorrect/"
-                          "${widget.evaluation.requiredCorrect}",
+                      "Aciertos consecutivos: $consecutiveCorrect/${widget.evaluation.requiredCorrect}",
                     ),
                   ],
                 ),
-
-                const SizedBox(
-                  height: 20,
-                ),
-
-                // ------------------------------------------------
-                // PREGUNTA
-                // ------------------------------------------------
-
+                const SizedBox(height: 20),
                 Text(
-
                   question.question,
-
-                  style:
-                  Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(
-                    fontWeight:
-                    FontWeight.bold,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-
-                const SizedBox(
-                  height: 16,
-                ),
-
-                // ------------------------------------------------
-                // OPCIONES
-                // ------------------------------------------------
-
+                const SizedBox(height: 16),
                 ...List.generate(
-
                   question.options.length,
-
                       (index) {
-
-                    final selected =
-                        selectedOption == index;
-
+                    final selected = selectedOption == index;
                     return Card(
-
-                      margin:
-                      const EdgeInsets.only(
-                        bottom: 8,
-                      ),
-
+                      margin: const EdgeInsets.only(bottom: 8),
                       child: RadioListTile<int>(
-
                         value: index,
-
-                        groupValue:
-                        selectedOption,
-
-                        onChanged:
-                        answered
+                        groupValue: selectedOption,
+                        onChanged: answered
                             ? null
                             : (value) {
-
                           setState(() {
-
-                            selectedOption =
-                                value;
+                            selectedOption = value;
                           });
                         },
-
-                        title: Text(
-                          question.options[index],
-                        ),
-
-                        selected:
-                        selected,
+                        title: Text(question.options[index]),
+                        selected: selected,
                       ),
                     );
                   },
                 ),
-
-                // ------------------------------------------------
-                // RESULTADO
-                // ------------------------------------------------
-
                 if (answered) ...[
-
-                  const SizedBox(
-                    height: 12,
-                  ),
-
+                  const SizedBox(height: 12),
                   Container(
-
-                    width:
-                    double.infinity,
-
-                    padding:
-                    const EdgeInsets.all(14),
-
-                    decoration:
-                    BoxDecoration(
-
-                      borderRadius:
-                      BorderRadius.circular(8),
-
-                      color:
-                      lastAnswerCorrect
-                          ? Colors.green
-                          .withValues(
-                        alpha: 0.12,
-                      )
-                          : Colors.red
-                          .withValues(
-                        alpha: 0.12,
-                      ),
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      color: lastAnswerCorrect
+                          ? Colors.green.withValues(alpha: 0.12)
+                          : Colors.red.withValues(alpha: 0.12),
                     ),
-
                     child: Row(
-
-                      crossAxisAlignment:
-                      CrossAxisAlignment.start,
-
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-
                         Icon(
-
-                          lastAnswerCorrect
-                              ? Icons.check_circle
-                              : Icons.cancel,
-
-                          color:
-                          lastAnswerCorrect
-                              ? Colors.green
-                              : Colors.red,
+                          lastAnswerCorrect ? Icons.check_circle : Icons.cancel,
+                          color: lastAnswerCorrect ? Colors.green : Colors.red,
                         ),
-
-                        const SizedBox(
-                          width: 10,
-                        ),
-
+                        const SizedBox(width: 10),
                         Expanded(
-
                           child: Text(
-
                             lastAnswerCorrect
-                                ? question
-                                .correctMessage
-                                : question
-                                .incorrectMessage,
+                                ? question.correctMessage
+                                : question.incorrectMessage,
                           ),
                         ),
                       ],
@@ -398,51 +215,26 @@ class _EvaluationDialogState
             ),
           ),
         ),
-
         actions: [
-
           if (!answered)
-
             FilledButton.icon(
-
-              icon: const Icon(
-                Icons.check,
-              ),
-
-              label: const Text(
-                "Responder",
-              ),
-
-              onPressed:
-              selectedOption == null
-                  ? null
-                  : answer,
+              icon: const Icon(Icons.check),
+              label: const Text("Responder"),
+              onPressed: selectedOption == null ? null : answer,
             )
-
           else
-
             FilledButton.icon(
-
               icon: Icon(
-
-                consecutiveCorrect >=
-                    widget.evaluation
-                        .requiredCorrect
+                consecutiveCorrect >= widget.evaluation.requiredCorrect
                     ? Icons.flag
                     : Icons.arrow_forward,
               ),
-
               label: Text(
-
-                consecutiveCorrect >=
-                    widget.evaluation
-                        .requiredCorrect
+                consecutiveCorrect >= widget.evaluation.requiredCorrect
                     ? "Resolver caso"
                     : "Continuar",
               ),
-
-              onPressed:
-              continueQuestion,
+              onPressed: continueQuestion,
             ),
         ],
       ),

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import '../models/decision.dart';
 import '../models/decision_type.dart';
 import '../models/location.dart';
@@ -13,10 +12,11 @@ final Map<String, Decision> warehouseDecisions = {
   "EXP5_ENTER_WAREHOUSE": Decision(
     id: "EXP5_ENTER_WAREHOUSE",
     expediente: 5,
-    title: "Ingresar al almacén",
+    title: "Asaltar el almacén industrial",
     description:
-    "Acceder al inmueble identificado durante la investigación.",
-    icon: Icons.warehouse,
+    "El metal de la persiana cede con un estruendo. El interior es un laberinto de estantes, sombras y un penetrante olor a cloro y productos químicos. "
+        "El equipo de asalto asegura la entrada mientras el aire se siente gélido.",
+    icon: Icons.security,
     type: DecisionType.legal,
     location: Location.warehouse,
     repeat: DecisionRepeat.once,
@@ -26,8 +26,8 @@ final Map<String, Decision> warehouseDecisions = {
     successRate: 100,
 
     result:
-    "El inmueble presenta características compatibles con un punto "
-        "de almacenamiento y distribución.",
+    "El inmueble es mucho más grande de lo que sugerían los planos externos. "
+        "Hay maquinaria de ventilación zumbando con fuerza, ocultando otros sonidos en el interior.",
 
     condition: (game) =>
     game.flags.warehouseUnlocked &&
@@ -36,22 +36,20 @@ final Map<String, Decision> warehouseDecisions = {
     onSuccess: (game) {
       game.flags.warehouseVisited = true;
     },
-
-    nextNode: "EXP5_INSPECT_WAREHOUSE",
   ),
 
   // ============================================================
-  // INSPECCIÓN
+  // LABORATORIO DE PRUEBAS (CRUELDAD)
   // ============================================================
 
-  "EXP5_INSPECT_WAREHOUSE": Decision(
-    id: "EXP5_INSPECT_WAREHOUSE",
+  "EXP5_INSPECT_CRUELTY": Decision(
+    id: "EXP5_INSPECT_CRUELTY",
     expediente: 5,
-    title: "Inspeccionar el almacén",
+    title: "Investigar zona de 'ensayos'",
     description:
-    "Realizar una búsqueda dirigida para localizar evidencia de la "
-        "cadena de distribución.",
-    icon: Icons.search,
+    "En una sección apartada, encuentras mesas con correas de sujeción, monitores cardíacos y registros médicos de 'sujetos'. "
+        "Quimera no solo distribuía sustancias; realizaba pruebas de letalidad en seres humanos para perfeccionar sus mezclas.",
+    icon: Icons.biotech,
     type: DecisionType.investigation,
     location: Location.warehouse,
     repeat: DecisionRepeat.once,
@@ -61,8 +59,8 @@ final Map<String, Decision> warehouseDecisions = {
     successRate: 100,
 
     result:
-    "La inspección revela documentación, materiales y registros que "
-        "permiten reconstruir parcialmente la distribución de sustancias.",
+    "Documentas una crueldad sistemática. Encuentras bitácoras donde se anotaba el tiempo de colapso de las víctimas. "
+        "La evidencia física aquí es irrefutable y devastadora.",
 
     condition: (game) =>
     game.flags.warehouseVisited &&
@@ -71,21 +69,20 @@ final Map<String, Decision> warehouseDecisions = {
     onSuccess: (game) {
       game.flags.warehouseInspected = true;
     },
-
-    nextNode: "EXP5_FIND_DISTRIBUTION_EVIDENCE",
   ),
 
   // ============================================================
-  // EVIDENCIA
+  // EVIDENCIA DE OMEGA (PISTAS)
   // ============================================================
 
-  "EXP5_FIND_DISTRIBUTION_EVIDENCE": Decision(
-    id: "EXP5_FIND_DISTRIBUTION_EVIDENCE",
+  "EXP5_DECRYPT_LOGS": Decision(
+    id: "EXP5_DECRYPT_LOGS",
     expediente: 5,
-    title: "Asegurar evidencia de distribución",
+    title: "Analizar bitácoras del servidor",
     description:
-    "Identificar los elementos que permitan establecer cómo operaba la red.",
-    icon: Icons.inventory,
+    "Acceder a un terminal oculto tras una pila de cajas. Las bitácoras mencionan al 'Equipo Omega' "
+        "y contienen una nota inquietante: 'Supervisión final desde el sector de mantenimiento... tras el metal rojo'.",
+    icon: Icons.terminal,
     type: DecisionType.investigation,
     location: Location.warehouse,
     repeat: DecisionRepeat.once,
@@ -95,10 +92,10 @@ final Map<String, Decision> warehouseDecisions = {
     successRate: 100,
 
     result:
-    "Los registros permiten relacionar distintos puntos de distribución "
-        "y establecer que los casos investigados formaban parte de una misma cadena.",
+    "Los registros sugieren que la cúpula de Quimera no ha abandonado el edificio. "
+        "Están monitoreando la escena desde una ubicación no registrada en los planos comerciales.",
 
-    evidence: "Registros de distribución",
+    evidence: "Registros de ubicación interna Omega",
 
     condition: (game) =>
     game.flags.warehouseInspected &&
@@ -107,22 +104,20 @@ final Map<String, Decision> warehouseDecisions = {
     onSuccess: (game) {
       game.flags.distributionEvidenceFound = true;
     },
-
-    nextNode: "EXP5_IDENTIFY_NETWORK",
   ),
 
   // ============================================================
-  // RED QUIMERA
+  // RECONSTRUCCIÓN FINAL
   // ============================================================
 
-  "EXP5_IDENTIFY_NETWORK": Decision(
-    id: "EXP5_IDENTIFY_NETWORK",
+  "EXP5_FIND_OMEGA_ENTRANCE": Decision(
+    id: "EXP5_FIND_OMEGA_ENTRANCE",
     expediente: 5,
-    title: "Reconstruir la cadena de distribución",
+    title: "Detectar discrepancia arquitectónica",
     description:
-    "Relacionar los registros obtenidos con la información reunida durante "
-        "los expedientes anteriores.",
-    icon: Icons.account_tree,
+    "Al cotejar los planos del servidor con la estructura física del almacén, notas un vacío de 60 metros cuadrados "
+        "en el sector de mantenimiento que no tiene puertas visibles desde el pasillo.",
+    icon: Icons.grid_view,
     type: DecisionType.investigation,
     location: Location.warehouse,
     repeat: DecisionRepeat.once,
@@ -132,10 +127,8 @@ final Map<String, Decision> warehouseDecisions = {
     successRate: 100,
 
     result:
-    "La información permite establecer que las intoxicaciones estaban "
-        "relacionadas con una misma cadena de distribución. El nombre "
-        "\"Quimera\" deja de ser únicamente un alias y pasa a representar "
-        "una estructura organizada.",
+    "La sospecha se confirma: hay una sección blindada oculta. "
+        "El Equipo Omega está en este mismo edificio, atrincherado en una habitación de pánico.",
 
     condition: (game) =>
     game.flags.distributionEvidenceFound &&
@@ -144,21 +137,19 @@ final Map<String, Decision> warehouseDecisions = {
     onSuccess: (game) {
       game.flags.quimeraNetworkIdentified = true;
     },
-
-    nextNode: "EXP5_SECURE_FINAL_EVIDENCE",
   ),
 
   // ============================================================
-  // EVIDENCIA FINAL
+  // PREPARACIÓN FINAL
   // ============================================================
 
-  "EXP5_SECURE_FINAL_EVIDENCE": Decision(
-    id: "EXP5_SECURE_FINAL_EVIDENCE",
+  "EXP5_PREPARE_FINAL_ASSAULT": Decision(
+    id: "EXP5_PREPARE_FINAL_ASSAULT",
     expediente: 5,
-    title: "Asegurar evidencia final",
+    title: "Asegurar evidencia y preparar asalto",
     description:
-    "Completar el aseguramiento de los elementos fundamentales para "
-        "la investigación médico-legal.",
+    "Toda la evidencia de la red Quimera ha sido asegurada. Los líderes han sido localizados. "
+        "Solo queda un paso para desarticular la organización por completo.",
     icon: Icons.gavel,
     type: DecisionType.legal,
     location: Location.warehouse,
@@ -169,8 +160,7 @@ final Map<String, Decision> warehouseDecisions = {
     successRate: 100,
 
     result:
-    "La evidencia fundamental queda asegurada y es entregada a las "
-        "autoridades correspondientes. La investigación puede pasar a su resolución.",
+    "El perímetro está sellado. El equipo espera tu decisión final sobre cómo proceder contra el núcleo de Omega.",
 
     condition: (game) =>
     game.flags.quimeraNetworkIdentified &&
@@ -178,22 +168,22 @@ final Map<String, Decision> warehouseDecisions = {
 
     onSuccess: (game) {
       game.flags.finalEvidenceSecured = true;
+      // Esto desbloqueará el Cuestionario Omega en el motor
     },
-
-    nextNode: "EXP5_FINAL_REVIEW",
   ),
 
   // ============================================================
-  // FINAL
+  // EJECUCIÓN OMEGA (DISPARADOR DEL FINAL)
   // ============================================================
 
   "EXP5_FINAL_REVIEW": Decision(
     id: "EXP5_FINAL_REVIEW",
     expediente: 5,
-    title: "Cerrar la investigación",
+    title: "EJECUTAR OPERACIÓN OMEGA",
     description:
-    "Integrar los hallazgos clínicos, toxicológicos y médico-legales.",
-    icon: Icons.fact_check,
+    "Es el momento de la verdad. Debes identificar la ubicación exacta de los líderes "
+        "y decidir el método de entrada. Un error aquí permitirá que Quimera escape para siempre.",
+    icon: Icons.flag,
     type: DecisionType.legal,
     location: Location.warehouse,
     repeat: DecisionRepeat.once,
@@ -203,15 +193,16 @@ final Map<String, Decision> warehouseDecisions = {
     successRate: 100,
 
     result:
-    "La investigación ha establecido una relación entre los casos de "
-        "intoxicación y la red identificada como Quimera.",
+    "Iniciando fase final de resolución...",
+
+    evaluationId: "EVAL_OMEGA_FINAL", // Cuestionario final
 
     condition: (game) =>
-    game.flags.exp5Complete,
+    game.flags.finalEvidenceSecured &&
+        !game.flags.omegaQuestionnaireCompleted,
 
     onSuccess: (game) {
-      game.flags.campaignComplete = true;
-      game.flags.exp5Complete = true;
+      // La lógica de flags finales se maneja en el executeEvaluation del motor
     },
   ),
 };

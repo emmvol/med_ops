@@ -158,9 +158,9 @@ final Map<String, Decision> raveHouseDecisions = {
   "EXP3_CLOSE": Decision(
     id: "EXP3_CLOSE",
     expediente: 3,
-    title: "Concluir inspección",
+    title: "Concluir inspección e integrar",
     description:
-    "Integrar los hallazgos obtenidos en el domicilio.",
+    "Integrar los hallazgos obtenidos en el domicilio para localizar la escena del crimen.",
     icon: Icons.fact_check,
     type: DecisionType.investigation,
     location: Location.raveHouse,
@@ -174,8 +174,12 @@ final Map<String, Decision> raveHouseDecisions = {
     "La investigación conduce a una nueva ubicación relacionada con el caso. "
         "La escena deberá ser examinada antes de continuar.",
 
+    // ESTA LÍNEA ES LA QUE FALTA:
+    evaluationId: "EVAL_EXP3_INTEGRATION",
+
     condition: (game) =>
-    game.flags.exp3Complete,
+    game.flags.exp3Complete &&
+        !game.completedEvaluations.contains("EVAL_EXP3_INTEGRATION"),
   ),
 
   "EXP3_IDENTIFY_CRIME_SCENE": Decision(
@@ -208,12 +212,10 @@ final Map<String, Decision> raveHouseDecisions = {
       game.flags.crimeSceneLeadFound = true;
       game.flags.crimeSceneUnlocked = true;
       game.flags.exp3Complete = true;
-      // Desbloquear evaluación integradora del expediente 3
-      if (!game.unlockedEvaluations.contains("EVAL_EXP3_INTEGRATION")) {
-        game.unlockedEvaluations.add("EVAL_EXP3_INTEGRATION");
-      }
-    },
 
+      // Ya no hace falta el add manual aquí,
+      // checkStoryProgress() lo hará automáticamente al ver exp3Complete = true
+    },
     nextNode: "EXP3_CLOSE",
   ),
 };

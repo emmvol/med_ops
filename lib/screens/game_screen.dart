@@ -2,8 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../data/campaign_evaluations.dart';
-import '../data/mini_case_evaluations.dart';
 import '../engine/game_engine.dart';
 import '../models/game_state.dart';
 import '../models/location.dart';
@@ -532,71 +530,70 @@ class _GameScreenState extends State<GameScreen> {
                         // ----------------------------------------
 
                         Expanded(
-
                           child: ListView(
+                            children: engine.getAvailableDecisions().map(
+                                  (decision) => DecisionCard(
+                                decision: decision,
+                                      onTap: () async {
+                                        // 1. Ejecutamos la decisión en el motor
+                                        final result = engine.executeDecision(decision);
 
-                            children: engine
-                                .getAvailableDecisions()
-                                .map(
+                                        if (result.success && result.evaluationId != null) {
+                                          final evaluation = engine.getEvaluation(result.evaluationId!);
 
-                                  (decision) =>
-                                  DecisionCard(
+                                          if (evaluation != null) {
+                                            // 2. Abrimos el diálogo de evaluación
+                                            await showDialog(
+                                              context: context,
+                                              barrierDismissible: false,
+                                              builder: (dialogContext) => EvaluationDialog(
+                                                evaluation: evaluation,
+                                                onFinished: (bool passed, List<int> actualAnswers) {
+                                                  // 3. Procesamos las respuestas REALES
+                                                  if (!engine.game.completedEvaluations.contains(evaluation.id)) {
+                                                    engine.executeEvaluation(
+                                                      evaluation.id,
+                                                      actualAnswers,
+                                                    );
+                                                  }
+                                                },
+                                              ),
+                                            );
 
-                                    decision:
-                                    decision,
+                                            // 4. VERIFICACIÓN DE FINAL DE JUEGO
+                                            // Si acabamos de hacer el Cuestionario Omega, navegamos al final
+                                            if (result.evaluationId == "EVAL_OMEGA_FINAL" && engine.game.caseFinished) {
+                                              if (mounted) {
+                                                Navigator.pushReplacement(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (_) => GameOverScreen(engine: engine),
+                                                    // Nota: GameOverScreen debe llamar a Finalizer.computeFinalOutcome
+                                                  ),
+                                                );
+                                              }
+                                              return;
+                                            }
 
-                                    onTap: () async {
-
-                                      final result =
-                                      engine
-                                          .executeDecision(
-                                        decision,
-                                      );
-
-                                      if (result.success && result.evaluationId != null) {
-
-                                        final evaluation =
-                                        engine.getEvaluation(result.evaluationId!);
-
-                                        if (evaluation != null) {
-
-                                          await showDialog(
-                                            context: context,
-                                            barrierDismissible: false,
-                                            builder: (_) => EvaluationDialog(
-                                              evaluation: evaluation,
-                                              onFinished: (
-                                                  bool success,
-                                                  String? evidence,
-                                                  ) {
-                                                // Aquí después aplicamos el resultado
-                                                // específico de la evaluación.
-                                              },
-                                            ),
-                                          );
+                                            // 5. Refrescar UI para decisiones normales/integradoras
+                                            if (mounted) {
+                                              setState(() {});
+                                            }
+                                          }
+                                          return;
                                         }
 
-                                        setState(() {});
-                                        return;
-                                      }
-
-                                      await showDialog(
-
-                                        context:
-                                        context,
-
-                                        builder: (_) =>
-                                            ResultDialog(
-                                              result:
-                                              result,
-                                            ),
-                                      );
-
-                                      setState(() {});
-                                    },
-                                  ),
-                            )
-                                .toList(),
+                                        // Manejo de decisiones sin evaluación (diálogo de resultado estándar)
+                                        if (mounted) {
+                                          await showDialog(
+                                            context: context,
+                                            builder: (_) => ResultDialog(result: result),
+                                          );
+                                          setState(() {});
+                                        }
+                                      },
+                              ),
+                            ).toList(),
                           ),
                         ),
 
@@ -689,35 +686,6 @@ class _GameScreenState extends State<GameScreen> {
                                 : () {
 
                               engine.endTurn();
-
-                              final event =
-                              engine
-                                  .checkRandomEvent();
-
-                              if (event !=
-                                  null) {
-
-                                showDialog(
-
-                                  context:
-                                  context,
-
-                                  builder:
-                                      (_) =>
-                                      AlertDialog(
-
-                                        title:
-                                        Text(
-                                          event.title,
-                                        ),
-
-                                        content:
-                                        Text(
-                                          event.description,
-                                        ),
-                                      ),
-                                );
-                              }
 
                               setState(
                                     () {},

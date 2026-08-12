@@ -532,4 +532,42 @@ final Map<String, Evaluation> miniCaseEvaluations = {
       ),
     ],
   ),
+
+  // ============================================================
+// RESOLUCIÓN FINAL: OPERACIÓN OMEGA
+// ============================================================
+  "EVAL_OMEGA_FINAL": Evaluation(
+    id: "EVAL_OMEGA_FINAL",
+    expediente: 5,
+    title: "Resolución Final: Operación Omega",
+    subtitle: "La red Quimera ha sido acorralada. Basado en la evidencia del almacén, toma la decisión final.",
+    type: EvaluationType.integration,
+    requiredCorrect: 2,
+    questions: [
+      EvaluationQuestion(
+        question: "Según la discrepancia en los planos y la bitácora del servidor ('tras el metal rojo'), ¿dónde se oculta el núcleo del Equipo Omega?",
+        options: [
+          "En el muelle de carga norte (Tras los contenedores)",
+          "Han escapado por los túneles de ventilación",
+          "Tras la puerta de mantenimiento reforzada en este almacén",
+          "En una oficina corporativa en el centro de la ciudad"
+        ],
+        correctIndex: 2, // La puerta oculta
+        correctMessage: "¡Correcto! La puerta de mantenimiento roja ocultaba el acceso al búnker.",
+        incorrectMessage: "Error. Mientras registras la zona equivocada, los líderes de Quimera escapan por una salida oculta.",
+      ),
+      EvaluationQuestion(
+        question: "El tiempo se agota. ¿Cómo procederá el equipo con la entrada al búnker?",
+        options: [
+          "Entrar de inmediato por nuestra cuenta (Riesgo alto)",
+          "Asegurar el perímetro y esperar al equipo táctico SWAT (Seguro)",
+        ],
+        correctIndex: 1, // Specialists
+        correctMessage: "El equipo SWAT realiza una entrada limpia y asegura a los objetivos.",
+        incorrectMessage: "La entrada precipitada resulta en un tiroteo caótico y pérdida de evidencia.",
+      ),
+    ],
+    // Estos flags son los que usará el Finalizer después
+    unlockFlagOnPass: "omegaQuestionnaireCompleted",
+  ),
 };

@@ -1,20 +1,24 @@
 import 'dart:math';
 
 import '../data/campaign_evaluations.dart';
+import '../data/crime_scene_decisions.dart';
 import '../data/decisions.dart';
-import '../data/events.dart';
+import '../data/hospital_decisions.dart';
+import '../data/hospital_expediente2_decisions.dart';
+import '../data/hospital_expediente4_decisions.dart';
 import '../data/mini_case_evaluations.dart';
+import '../data/police_decisions.dart';
+import '../data/rave_house_decisions.dart';
 import '../data/sample_case.dart';
+import '../data/warehouse_decisions.dart';
 import '../models/decision.dart';
 import '../models/decision_result.dart';
 import '../models/evaluation.dart';
 import '../models/evaluation_result.dart';
-import '../models/game_event.dart';
 import '../models/game_state.dart';
 import '../models/location.dart';
 import '../models/story_node.dart';
 import '../models/team.dart';
-import '../services/campaign_progression.dart';
 import '../services/location_manager.dart';
 
 class GameEngine {
@@ -165,21 +169,32 @@ class GameEngine {
      }
 
      void _completeDecisionForEvaluation(String evaluationId) {
+          // IMPORTANTE: Asegúrate de importar todos los archivos de decisiones aquí
+          final allDecisions = [
+               ...decisions.values,
+               ...hospitalDecisions.values,
+               ...hospitalExpediente2Decisions.values, // <--- Verifica que este mapa tenga las tarjetas
+               ...hospitalExpediente4Decisions.values,
+               ...policeDecisions.values,
+               ...crimeSceneDecisions.values,
+               ...raveHouseDecisions.values,
+               ...warehouseDecisions.values,
+          ];
 
-          for (final decision in decisions.values) {
+          print("DEBUG: Buscando tarjeta asociada a evaluación: $evaluationId");
 
+          for (final decision in allDecisions) {
                if (decision.evaluationId == evaluationId) {
-
                     game.completedActions.add(decision.id);
-
-                    break;
+                    print("SISTEMA: Tarjeta ${decision.id} ocultada con éxito.");
+                    return; // Salimos en cuanto encontramos la primera coincidencia
                }
           }
+
+          print("DEBUG WARNING: No se encontró ninguna tarjeta con evaluationId: $evaluationId");
      }
 
-     // ============================================================
      // CRONÓMETRO
-     // ============================================================
 
      Duration get remainingTime {
 
@@ -353,269 +368,159 @@ class GameEngine {
          String evaluationId,
          List<int> answers,
          ) {
+          print("DEBUG: Iniciando executeEvaluation para: $evaluationId");
 
           final evaluation = getEvaluation(evaluationId);
-
           if (evaluation == null) {
-               throw StateError(
-                    "Evaluación no encontrada: $evaluationId",
-               );
+               print("DEBUG ERROR: No se encontró la evaluación $evaluationId");
+               throw StateError("Evaluación no encontrada");
           }
 
-          if (!game.unlockedEvaluations.contains(evaluationId)) {
-               throw StateError(
-                    "La evaluación no está desbloqueada: $evaluationId",
-               );
-          }
-
-          if (game.completedEvaluations.contains(evaluationId)) {
-               throw StateError(
-                    "La evaluación ya fue completada: $evaluationId",
-               );
-          }
-
-          // Coste en AP al iniciar evaluación
           final team = currentTeam;
-          if (team.actionPoints <= 0) {
-               throw StateError("No quedan puntos de acción para iniciar la evaluación.");
-          }
-          team.actionPoints -= 1;
-
-          // Validación de respuestas parciales según maxQuestionsToAsk
-          final maxAllowed = evaluation.maxQuestionsToAsk ?? evaluation.questions.length;
-          if (answers.isEmpty || answers.length > evaluation.questions.length) {
-               throw StateError("Número de respuestas inválido.");
-          }
-          if (answers.length > maxAllowed) {
-               throw StateError("Se permiten como máximo $maxAllowed respuestas en esta evaluación.");
-          }
-
           int correct = 0;
-          int trustChange = 0;
-          int moneyChange = 0;
-          final List<String> evidence = [];
 
-          // Evaluar solo las preguntas contestadas (answers[i] => question i)
           for (int i = 0; i < answers.length; i++) {
-               final question = evaluation.questions[i];
-               final answer = answers[i];
-
-               if (answer < 0 || answer >= question.options.length) {
-                    throw StateError("Respuesta inválida en pregunta ${i + 1}.");
-               }
-
-               if (answer == question.correctIndex) {
+               if (i < evaluation.questions.length &&
+                   answers[i] == evaluation.questions[i].correctIndex) {
                     correct++;
-                    trustChange += question.trustOnSuccess;
-                    moneyChange += question.moneyReward;
-                    if (question.evidenceOnSuccess != null) {
-                         evidence.add(question.evidenceOnSuccess!);
-                    }
-               } else {
-                    trustChange -= question.trustOnFail;
-                    moneyChange -= question.moneyPenalty;
-                    if (question.evidenceOnFail != null) {
-                         evidence.add(question.evidenceOnFail!);
-                    }
                }
           }
 
           final bool passed = correct >= evaluation.requiredCorrect;
-
-          // Aplicar recompensas fijas de la evaluación (se acumulan a los cambios por preguntas)
-          trustChange += evaluation.trustReward;
-          moneyChange += evaluation.moneyReward;
-
-          // Guardar expediente previo para el resultado
-          final int previousExpediente = game.currentExpediente;
-
-          // ------------------------------------------------------------
-          // APLICAR RESULTADOS AL EQUIPO
-          // ------------------------------------------------------------
-          team.trust += trustChange;
-          team.money += moneyChange;
-          for (final item in evidence) {
-               team.evidence.add(item);
-          }
-
-          // ------------------------------------------------------------
-          // DESBLOQUEOS / REGISTRO
-          // ------------------------------------------------------------
-          final unlockedFlag = passed ? evaluation.unlockFlagOnPass : evaluation.unlockFlagOnFail;
+          print("DEBUG: Resultado Evaluación -> Correctas: $correct. Pasó: $passed");
 
           if (passed) {
-               // aplicar flag asociado si lo tiene
-               if (unlockedFlag != null) {
-                    _setEvaluationUnlockFlag(unlockedFlag);
+               // 1. Marcar como completada
+               game.completedEvaluations.add(evaluationId);
+
+               // 2. Activar Flag (Esto es lo que checkea la 'condition' de la tarjeta)
+               if (evaluation.unlockFlagOnPass != null) {
+                    print("DEBUG: Activando flag: ${evaluation.unlockFlagOnPass}");
+                    _setEvaluationUnlockFlag(evaluation.unlockFlagOnPass!);
                }
 
-               // registrar evaluación completada permanentemente (si no estaba)
-               if (!game.completedEvaluations.contains(evaluationId)) {
-                    game.completedEvaluations.add(evaluationId);
-               }
+               // 3. Ocultar la tarjeta de decisión del menú
+               _completeDecisionForEvaluation(evaluationId);
 
-               // Si es una evaluación integradora, marcar el expediente como integrado (flag)
+               // 4. Progresión de expediente
                if (evaluation.type == EvaluationType.integration) {
-                    switch (evaluation.expediente) {
-                         case 1:
-                              game.flags.exp1Complete = true;
-                              break;
-                         case 2:
-                              game.flags.exp2Complete = true;
-                              break;
-                         case 3:
-                              game.flags.exp3Complete = true;
-                              break;
-                         case 4:
-                              game.flags.exp4Complete = true;
-                              break;
-                         case 5:
-                              game.flags.exp5Complete = true;
-                              break;
-                         default:
-                              break;
-                    }
+                    _markIntegrationCompleted(evaluationId);
+                    _advanceAfterIntegration(evaluationId);
                }
-
           } else {
-               // En fallo: si es un mini-case, cerrarlo y marcarlo en completedMiniCases para evitar reapertura automática
-               if (evaluation.type == EvaluationType.miniCase) {
-                    game.unlockedEvaluations.remove(evaluationId);
-                    game.flags.completedMiniCases.add(evaluationId);
-               }
-
-               // Penalización: consumir las acciones restantes del equipo y avanzar turno.
+               print("DEBUG: Evaluación fallida. Penalizando equipo.");
+               team.trust -= 5;
                team.actionPoints = 0;
-               nextTurn();
           }
 
-          // ------------------------------------------------------------
-          // SINCRONIZAR PROGRESIÓN y desbloqueos (forzar evaluación de disponibilidad)
-          // ------------------------------------------------------------
+          if (evaluationId == "EVAL_OMEGA_FINAL") {
+               // 1. Guardamos las decisiones específicas del jugador en los flags
+               // answers[0] es la ubicación, answers[1] es el método de entrada
+               game.flags.omegaQuestionnaireCompleted = true;
+               game.flags.omegaCorrectLocationFound = (answers[0] == 2);
+               game.flags.omegaEntryBySpecialists = (answers[1] == 1);
+
+               // 2. Marcamos el caso como terminado
+               game.caseFinished = true;
+
+               print("SISTEMA: Operación Quimera finalizada. Procesando desenlace...");
+          }
+
           checkStoryProgress();
-
-          final int currentExpediente = game.currentExpediente;
-          final bool expedienteAdvanced = currentExpediente > previousExpediente;
-
           return EvaluationResult(
                evaluationId: evaluationId,
                correctAnswers: correct,
                totalQuestions: evaluation.questions.length,
                passed: passed,
-               moneyChange: moneyChange,
-               trustChange: trustChange,
-               evidenceObtained: evidence,
-               unlockedFlag: unlockedFlag,
-               previousExpediente: previousExpediente,
-               currentExpediente: currentExpediente,
-               expedienteAdvanced: expedienteAdvanced,
+               moneyChange: evaluation.moneyReward,
+               trustChange: evaluation.trustReward,
+               evidenceObtained: [],
+               unlockedFlag: passed ? evaluation.unlockFlagOnPass : evaluation.unlockFlagOnFail,
+               previousExpediente: game.currentExpediente,
+               currentExpediente: game.currentExpediente,
+               expedienteAdvanced: false,
           );
+     }
+// Helper para evitar errores de compilación
+     EvaluationResult _buildEmptyResult(String id) => EvaluationResult(
+          evaluationId: id, correctAnswers: 0, totalQuestions: 0, passed: true,
+          moneyChange: 0, trustChange: 0, evidenceObtained: [], unlockedFlag: null,
+          previousExpediente: game.currentExpediente, currentExpediente: game.currentExpediente,
+          expedienteAdvanced: false,
+     );
+
+     void checkStoryProgress() {
+          final currentExp = game.currentExpediente;
+
+          // --- DESBLOQUEO DE INTEGRACIONES (Expedientes 1 a 4) ---
+          // Determinamos si el expediente actual cumple los requisitos para abrir su evaluación final
+          bool readyForIntegration = false;
+
+          switch (currentExp) {
+               case 1:
+               // Se desbloquea por flags internos en la decisión EXP1_CLOSE
+                    readyForIntegration = game.flags.exp1Complete;
+                    break;
+
+               case 2:
+               // Todos los minicasos clínicos aprobados
+                    readyForIntegration = game.flags.miniCaseAlcoholComplete &&
+                        game.flags.miniCaseCocaineComplete &&
+                        game.flags.miniCaseCannabisComplete &&
+                        game.flags.miniCaseHallucinogensComplete &&
+                        game.flags.miniCaseOpioidsComplete &&
+                        game.flags.miniCaseBenzosComplete &&
+                        game.flags.miniCasePolyComplete;
+                    break;
+
+               case 3:
+               // Investigación de la Rave House terminada
+                    readyForIntegration = game.flags.exp3Complete;
+                    break;
+
+               case 4:
+               // Interrogatorio realizado (si vive) O Autopsia (si muere) + Escena del Crimen visitada
+                    bool medicalDone = game.flags.omegaQuestionnaireUnlocked || game.flags.autopsyCompleted;
+                    readyForIntegration = medicalDone && game.flags.crimeSceneEvidenceFound;
+                    break;
+
+               case 5:
+               // Evidencia final del almacén asegurada
+                    readyForIntegration = game.flags.finalEvidenceSecured;
+                    break;
+          }
+
+          // ID de la evaluación a desbloquear
+          String evaluationId = currentExp == 5
+              ? "EVAL_OMEGA_FINAL"
+              : "EVAL_EXP${currentExp}_INTEGRATION";
+
+          // Si cumplimos requisitos y no estaba desbloqueada, la activamos
+          if (readyForIntegration && !game.unlockedEvaluations.contains(evaluationId)) {
+               game.unlockedEvaluations.add(evaluationId);
+               print("SISTEMA: Desbloqueada evaluación: $evaluationId");
+          }
      }
 
      bool _advanceAfterIntegration(String evaluationId) {
-          int? nextExpediente;
+          int? nextExp;
+          if (evaluationId == "EVAL_EXP1_INTEGRATION") nextExp = 2;
+          else if (evaluationId == "EVAL_EXP2_INTEGRATION") nextExp = 3;
+          else if (evaluationId == "EVAL_EXP3_INTEGRATION") nextExp = 4;
+          else if (evaluationId == "EVAL_EXP4_INTEGRATION") nextExp = 5;
 
-          switch (evaluationId) {
-               case "EVAL_EXP1_INTEGRATION":
-                    nextExpediente = 2;
-                    break;
+          if (nextExp == null || game.currentExpediente >= nextExp) return false;
 
-               case "EVAL_EXP2_INTEGRATION":
-                    nextExpediente = 3;
-                    break;
+          game.currentExpediente = nextExp;
+          game.currentNodeId = "EXPEDIENTE_$nextExp";
 
-               case "EVAL_EXP3_INTEGRATION":
-                    nextExpediente = 4;
-                    break;
-
-               case "EVAL_EXP4_INTEGRATION":
-                    nextExpediente = 5;
-                    break;
+          // ACTUALIZACIÓN CRÍTICA: Mueve a los equipos al nuevo nodo
+          for (var team in game.teams) {
+               team.currentNode = "EXPEDIENTE_$nextExp";
           }
 
-          if (nextExpediente == null) {
-               return false;
-          }
-
-          // Evitar regresar o repetir expediente.
-          if (game.currentExpediente >= nextExpediente) {
-               return false;
-          }
-
-          final previous = game.currentExpediente;
-
-          game.currentExpediente = nextExpediente;
-
-          game.currentNodeId =
-          "EXPEDIENTE_$nextExpediente";
-
-          // ------------------------------------------------------------
-          // DESBLOQUEAR INTEGRACIÓN DEL NUEVO EXPEDIENTE
-          // ------------------------------------------------------------
-
-          final integrationId =
-              "EVAL_EXP${nextExpediente}_INTEGRATION";
-
-          if (getEvaluation(integrationId) != null) {
-               game.unlockedEvaluations.add(integrationId);
-          }
-
-          // ------------------------------------------------------------
-          // DESBLOQUEAR EVALUACIÓN FINAL DEL NUEVO EXPEDIENTE
-          // ------------------------------------------------------------
-
-          unlockFinalEvaluation(nextExpediente);
-
-          return game.currentExpediente > previous;
-     }
-
-     void _updateEvaluationProgress(
-         String evaluationId,
-         bool passed,
-         ) {
-
-          if (!passed) {
-               return;
-          }
-
-          switch (evaluationId) {
-
-               case "EVAL_EXP1_INTEGRATION":
-                    game.flags.evalExp1IntegrationCompleted = true;
-                    break;
-
-               case "EVAL_EXP2_INTEGRATION":
-                    game.flags.evalExp2IntegrationCompleted = true;
-                    break;
-
-               case "EVAL_EXP3_INTEGRATION":
-                    game.flags.evalExp3IntegrationCompleted = true;
-                    break;
-
-               case "EVAL_EXP4_INTEGRATION":
-                    game.flags.evalExp4IntegrationCompleted = true;
-                    break;
-
-               case "EVAL_FINAL_EXP1":
-                    game.flags.evalExp1FinalCompleted = true;
-                    break;
-
-               case "EVAL_FINAL_EXP2":
-                    game.flags.evalExp2FinalCompleted = true;
-                    break;
-
-               case "EVAL_FINAL_EXP3":
-                    game.flags.evalExp3FinalCompleted = true;
-                    break;
-
-               case "EVAL_FINAL_EXP4":
-                    game.flags.evalExp4FinalCompleted = true;
-                    break;
-
-               case "EVAL_FINAL_EXP5":
-                    game.flags.evalExp5FinalCompleted = true;
-                    break;
-          }
+          print("SISTEMA: Avance a Expediente $nextExp confirmado.");
+          return true;
      }
 
      void _markIntegrationCompleted(String evaluationId) {
@@ -646,37 +551,32 @@ class GameEngine {
      }
 
      void _setEvaluationUnlockFlag(String flag) {
-
           switch (flag) {
+          // Expediente 1
+               case "policeUnlocked": game.flags.policeUnlocked = true; break;
 
-               case "policeUnlocked":
-                    game.flags.policeUnlocked = true;
-                    break;
+          // Expediente 2 - Minicasos
+               case "miniCaseAlcoholComplete": game.flags.miniCaseAlcoholComplete = true; break;
+               case "miniCaseCocaineComplete": game.flags.miniCaseCocaineComplete = true; break;
+               case "miniCaseCannabisComplete": game.flags.miniCaseCannabisComplete = true; break;
+               case "miniCaseHallucinogensComplete": game.flags.miniCaseHallucinogensComplete = true; break;
+               case "miniCaseOpioidsComplete": game.flags.miniCaseOpioidsComplete = true; break;
+               case "miniCaseBenzosComplete": game.flags.miniCaseBenzosComplete = true; break;
+               case "miniCasePolyComplete": game.flags.miniCasePolyComplete = true; break;
 
-               case "raveHouseUnlocked":
-                    game.flags.raveHouseUnlocked = true;
-                    break;
+          // Expediente 2 - Integración
+               case "raveHouseUnlocked": game.flags.raveHouseUnlocked = true; break;
 
-               case "crimeSceneUnlocked":
-                    game.flags.crimeSceneUnlocked = true;
-                    break;
-
-               case "warehouseUnlocked":
-                    game.flags.warehouseUnlocked = true;
-                    break;
-
-               case "omegaQuestionnaireUnlocked":
-                    game.flags.omegaQuestionnaireUnlocked = true;
-                    break;
+          // Expediente 4
+               case "omegaQuestionnaireUnlocked": game.flags.omegaQuestionnaireUnlocked = true; break;
 
                default:
+                    print("ADVERTENCIA: Flag no reconocida: $flag");
                     break;
           }
      }
 
-     // ============================================================
      // RESET
-     // ============================================================
 
      void resetCase({
           Duration? duration,
@@ -726,103 +626,38 @@ class GameEngine {
           game.currentNodeId = "EXPEDIENTE_1";
      }
 
-     // ============================================================
-     // EVENTOS
-     // ============================================================
-     GameEvent? checkRandomEvent() {
-
-          final roll =
-          random.nextInt(100);
-
-          if (
-          !game.flags.patientAwake &&
-              !game.flags.patientDead &&
-              roll < 12
-          ) {
-
-               game.flags.patientAwake = true;
-
-               return randomEvents.firstWhere(
-                        (e) =>
-                    e.title ==
-                        "Paciente despierta",
-               );
-          }
-
-          if (
-          game.flags.policeCalled &&
-              !game.flags.phoneTracked &&
-              roll < 20
-          ) {
-
-               game.flags.phoneTracked = true;
-
-               return randomEvents.firstWhere(
-                        (e) =>
-                    e.title ==
-                        "Teléfono localizado",
-               );
-          }
-
-          if (
-          game.patient.stability < 40 &&
-              !game.flags.patientDead &&
-              roll < 25
-          ) {
-
-               return randomEvents.firstWhere(
-                        (e) =>
-                    e.title ==
-                        "Paciente empeora",
-               );
-          }
-
-          return null;
-     }
-
-     // ============================================================
      // DECISIONES DISPONIBLES
-     // ============================================================
+
      List<Decision> getAvailableDecisions() {
+          if (game.caseFinished || game.gamePaused) return [];
 
-          if (
-          game.caseFinished ||
-              game.gamePaused
-          ) {
-               return [];
-          }
+          // 1. Unificamos todos los mapas usando un Map para evitar duplicados por ID
+          final Map<String, Decision> allPossible = {
+               ...decisions,
+               ...hospitalDecisions,
+               ...hospitalExpediente2Decisions,
+               ...hospitalExpediente4Decisions,
+               ...policeDecisions,
+               ...crimeSceneDecisions,
+               ...raveHouseDecisions,
+               ...warehouseDecisions,
+          };
 
-          return decisions.values.where(
-                   (decision) {
+          return allPossible.values.where((decision) {
+               // Filtro de ubicación
+               if (decision.location != currentTeam.location) return false;
 
-                    if (
-                    decision.location !=
-                        currentTeam.location
-                    ) {
-                         return false;
-                    }
+               // Filtro de expediente
+               if (decision.expediente > game.currentExpediente) return false;
 
-                    // El expediente es global.
-                    if (
-                    decision.expediente >
-                        game.currentExpediente
-                    ) {
-                         return false;
-                    }
+               // Filtro de un solo uso
+               if (decision.repeat == DecisionRepeat.once &&
+                   game.completedActions.contains(decision.id)) {
+                    return false;
+               }
 
-                    if (
-                    decision.repeat ==
-                        DecisionRepeat.once &&
-                        game.completedActions.contains(
-                             decision.id,
-                        )
-                    ) {
-                         return false;
-                    }
-
-                    return decision.isAvailable(game);
-               },
-          ).toList();
+               return decision.isAvailable(game);
+          }).toList();
      }
 
      List<Evaluation> getAvailableEvaluations() {
@@ -843,9 +678,7 @@ class GameEngine {
           return allEvaluations.where(
                    (evaluation) {
 
-                    // ----------------------------------------------------------
                     // SOLO MOSTRAR EVALUACIONES DEL EXPEDIENTE ACTUAL
-                    // ----------------------------------------------------------
 
                     if (
                     evaluation.expediente !=
@@ -854,9 +687,7 @@ class GameEngine {
                          return false;
                     }
 
-                    // ----------------------------------------------------------
                     // NO MOSTRAR EVALUACIONES YA COMPLETADAS
-                    // ----------------------------------------------------------
 
                     if (
                     game.completedEvaluations.contains(
@@ -866,9 +697,7 @@ class GameEngine {
                          return false;
                     }
 
-                    // ----------------------------------------------------------
                     // DEBE ESTAR DESBLOQUEADA
-                    // ----------------------------------------------------------
 
                     return game.unlockedEvaluations.contains(
                          evaluation.id,
@@ -877,9 +706,8 @@ class GameEngine {
           ).toList();
      }
 
-     // ============================================================
      // UBICACIONES
-     // ============================================================
+
      List<Location> getAvailableLocations() {
 
           return LocationManager.availableLocations(game);
@@ -933,9 +761,8 @@ class GameEngine {
           );
      }
 
-     // ============================================================
      // TURNOS
-     // ============================================================
+
      void nextTurn() {
 
           game.roundManager.nextTurn(
@@ -954,9 +781,8 @@ class GameEngine {
           nextTurn();
      }
 
-     // ============================================================
      // ESTADO DEL PACIENTE
-     // ============================================================
+
      void checkPatientStatus() {
 
           if (
@@ -987,46 +813,6 @@ class GameEngine {
           game.flags.patientStable =
               game.patient.stability >= 70 &&
                   !game.flags.patientDead;
-     }
-
-     // ============================================================
-     // PROGRESIÓN GLOBAL
-     // ============================================================
-
-     void checkStoryProgress() {
-
-          // 1) Intentar desbloquear la evaluación integradora del siguiente expediente
-          //    si sus prerrequisitos ya están cumplidos (CampaignProgression.canStartExpediente).
-          final nextCandidate = game.currentExpediente + 1;
-          if (nextCandidate <= 5 && CampaignProgression.canStartExpediente(game, nextCandidate)) {
-               final integrationId = "EVAL_EXP${nextCandidate}_INTEGRATION";
-               final integrationEval = getEvaluation(integrationId);
-               if (integrationEval != null &&
-                   !game.completedEvaluations.contains(integrationId) &&
-                   !game.unlockedEvaluations.contains(integrationId)) {
-                    game.unlockedEvaluations.add(integrationId);
-               }
-          }
-
-          // 2) Avanzar expediente de forma controlada según CampaignProgression.
-          //    getNextExpediente ya utiliza las reglas (p. ej. requiere completedEvaluations de integradoras).
-          final nextExpediente = CampaignProgression.getNextExpediente(game);
-
-          if (nextExpediente > game.currentExpediente && nextExpediente <= 5) {
-
-               // Avanzar al siguiente expediente determinado por la progresión.
-               game.currentExpediente = nextExpediente;
-               game.currentNodeId = "EXPEDIENTE_$nextExpediente";
-
-               // Desbloquear la evaluación final del expediente (si existe)
-               unlockFinalEvaluation(nextExpediente);
-
-               // Asegurar que la integradora del expediente activado esté desbloqueada también
-               final integrationId = "EVAL_EXP${nextExpediente}_INTEGRATION";
-               if (getEvaluation(integrationId) != null && !game.unlockedEvaluations.contains(integrationId)) {
-                    game.unlockedEvaluations.add(integrationId);
-               }
-          }
      }
 
      void unlockFinalEvaluation(int expediente) {
