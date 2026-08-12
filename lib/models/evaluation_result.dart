@@ -13,6 +13,14 @@ class EvaluationResult {
 
   final String? unlockedFlag;
 
+  // ------------------------------------------------------------
+  // PROGRESIÓN
+  // ------------------------------------------------------------
+
+  final int previousExpediente;
+  final int currentExpediente;
+  final bool expedienteAdvanced;
+
   const EvaluationResult({
     required this.evaluationId,
     required this.correctAnswers,
@@ -22,5 +30,8 @@ class EvaluationResult {
     required this.trustChange,
     required this.evidenceObtained,
     required this.unlockedFlag,
+    required this.previousExpediente,
+    required this.currentExpediente,
+    required this.expedienteAdvanced,
   });
 }

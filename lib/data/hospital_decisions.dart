@@ -545,12 +545,12 @@ final Map<String, Decision> hospitalDecisions = {
                 )
         ),
 
-      onSuccess: (game) {
-        game.flags.exp1Complete = true;
-        // Desbloquear evaluación integradora del expediente 1
-        if (!game.unlockedEvaluations.contains("EVAL_EXP1_INTEGRATION")) {
-          game.unlockedEvaluations.add("EVAL_EXP1_INTEGRATION");
-        }
-      },
+    evaluationId: "EVAL_EXP1_INTEGRATION",
+
+    onSuccess: (game) {
+      game.unlockedEvaluations.add(
+        "EVAL_EXP1_INTEGRATION",
+      );
+    },
   ),
 };

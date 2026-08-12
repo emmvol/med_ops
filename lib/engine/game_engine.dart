@@ -99,7 +99,12 @@ class GameEngine {
 
                team.trust += decision.trustChange;
 
-               if (decision.repeat == DecisionRepeat.once) {
+               // Las decisiones que abren una evaluación de integración
+               // permanecen disponibles hasta que la evaluación sea aprobada.
+               if (
+               decision.repeat == DecisionRepeat.once &&
+                   decision.evaluationId == null
+               ) {
                     game.completedActions.add(decision.id);
                }
 
@@ -129,7 +134,7 @@ class GameEngine {
           // No decrementar la estabilidad por decisiones clínicas a partir de EXPEDIENTE 4.
           // El paciente puede despertarse y debe conservar estabilidad durante el interrogatorio.
           if (!game.flags.patientDead && game.currentExpediente < 4) {
-               game.patient.modifyStability(-5);
+               game.patient.modifyStability(-3);
           }
 
           // ------------------------------------------------------------
@@ -157,6 +162,19 @@ class GameEngine {
                    : null,
                evaluationId: decision.evaluationId,
           );
+     }
+
+     void _completeDecisionForEvaluation(String evaluationId) {
+
+          for (final decision in decisions.values) {
+
+               if (decision.evaluationId == evaluationId) {
+
+                    game.completedActions.add(decision.id);
+
+                    break;
+               }
+          }
      }
 
      // ============================================================
@@ -230,10 +248,6 @@ class GameEngine {
           game.gamePaused = false;
           game.timeExpired = false;
           game.caseFinished = false;
-
-          unlockFinalEvaluation(
-               game.currentExpediente,
-          );
      }
 
      void pauseGame() {
@@ -440,6 +454,14 @@ class GameEngine {
 
           if (passed) {
                _markIntegrationCompleted(evaluationId);
+
+               game.completedEvaluations.add(
+                    evaluationId,
+               );
+
+               _completeDecisionForEvaluation(
+                    evaluationId,
+               );
                trustChange += evaluation.trustReward;
                moneyChange += evaluation.moneyReward;
           }
@@ -493,34 +515,50 @@ class GameEngine {
           }
 
           // ------------------------------------------------------------
-          // REGISTRAR EVALUACIÓN
-          // ------------------------------------------------------------
+// REGISTRAR EVALUACIÓN
+// ------------------------------------------------------------
 
           if (passed) {
-               game.completedEvaluations.add(evaluationId);
+               _updateEvaluationProgress(
+                    evaluationId,
+                    true,
+               );
+
+               game.completedEvaluations.add(
+                    evaluationId,
+               );
+
+               _completeDecisionForEvaluation(
+                    evaluationId,
+               );
           }
 
-          // ------------------------------------------------------------
-          // FALLO
-          //
-          // El minicaso se cierra.
-          // No se reabre automáticamente.
-          //
-          // El turno se consume como consecuencia del fallo.
-          // La decisión que vuelva a abrir el minicaso deberá pagar
-          // nuevamente su AP.
-          // ------------------------------------------------------------
+// ------------------------------------------------------------
+// FALLO
+// ------------------------------------------------------------
 
           if (!passed) {
-
                currentTeam.actionPoints = 0;
           }
 
-          // ------------------------------------------------------------
-          // PROGRESIÓN
-          // ------------------------------------------------------------
+// ------------------------------------------------------------
+// PROGRESIÓN EXPLÍCITA
+// ------------------------------------------------------------
 
-          checkStoryProgress();
+          final previousExpediente =
+              game.currentExpediente;
+
+          bool expedienteAdvanced = false;
+
+          if (passed) {
+               expedienteAdvanced =
+                   _advanceAfterIntegration(
+                        evaluationId,
+                   );
+          }
+
+          final currentExpediente =
+              game.currentExpediente;
 
           return EvaluationResult(
                evaluationId: evaluationId,
@@ -529,10 +567,119 @@ class GameEngine {
                passed: passed,
                moneyChange: moneyChange,
                trustChange: trustChange,
-               evidenceObtained:
-               passed ? evidence : [],
+               evidenceObtained: passed ? evidence : [],
                unlockedFlag: unlockedFlag,
+
+               previousExpediente: previousExpediente,
+               currentExpediente: currentExpediente,
+               expedienteAdvanced: expedienteAdvanced,
           );
+     }
+
+     bool _advanceAfterIntegration(String evaluationId) {
+          int? nextExpediente;
+
+          switch (evaluationId) {
+               case "EVAL_EXP1_INTEGRATION":
+                    nextExpediente = 2;
+                    break;
+
+               case "EVAL_EXP2_INTEGRATION":
+                    nextExpediente = 3;
+                    break;
+
+               case "EVAL_EXP3_INTEGRATION":
+                    nextExpediente = 4;
+                    break;
+
+               case "EVAL_EXP4_INTEGRATION":
+                    nextExpediente = 5;
+                    break;
+          }
+
+          if (nextExpediente == null) {
+               return false;
+          }
+
+          // Evitar regresar o repetir expediente.
+          if (game.currentExpediente >= nextExpediente) {
+               return false;
+          }
+
+          final previous = game.currentExpediente;
+
+          game.currentExpediente = nextExpediente;
+
+          game.currentNodeId =
+          "EXPEDIENTE_$nextExpediente";
+
+          // ------------------------------------------------------------
+          // DESBLOQUEAR INTEGRACIÓN DEL NUEVO EXPEDIENTE
+          // ------------------------------------------------------------
+
+          final integrationId =
+              "EVAL_EXP${nextExpediente}_INTEGRATION";
+
+          if (getEvaluation(integrationId) != null) {
+               game.unlockedEvaluations.add(integrationId);
+          }
+
+          // ------------------------------------------------------------
+          // DESBLOQUEAR EVALUACIÓN FINAL DEL NUEVO EXPEDIENTE
+          // ------------------------------------------------------------
+
+          unlockFinalEvaluation(nextExpediente);
+
+          return game.currentExpediente > previous;
+     }
+
+     void _updateEvaluationProgress(
+         String evaluationId,
+         bool passed,
+         ) {
+
+          if (!passed) {
+               return;
+          }
+
+          switch (evaluationId) {
+
+               case "EVAL_EXP1_INTEGRATION":
+                    game.flags.evalExp1IntegrationCompleted = true;
+                    break;
+
+               case "EVAL_EXP2_INTEGRATION":
+                    game.flags.evalExp2IntegrationCompleted = true;
+                    break;
+
+               case "EVAL_EXP3_INTEGRATION":
+                    game.flags.evalExp3IntegrationCompleted = true;
+                    break;
+
+               case "EVAL_EXP4_INTEGRATION":
+                    game.flags.evalExp4IntegrationCompleted = true;
+                    break;
+
+               case "EVAL_FINAL_EXP1":
+                    game.flags.evalExp1FinalCompleted = true;
+                    break;
+
+               case "EVAL_FINAL_EXP2":
+                    game.flags.evalExp2FinalCompleted = true;
+                    break;
+
+               case "EVAL_FINAL_EXP3":
+                    game.flags.evalExp3FinalCompleted = true;
+                    break;
+
+               case "EVAL_FINAL_EXP4":
+                    game.flags.evalExp4FinalCompleted = true;
+                    break;
+
+               case "EVAL_FINAL_EXP5":
+                    game.flags.evalExp5FinalCompleted = true;
+                    break;
+          }
      }
 
      void _markIntegrationCompleted(String evaluationId) {
@@ -760,6 +907,21 @@ class GameEngine {
           return allEvaluations.where(
                    (evaluation) {
 
+                    // ----------------------------------------------------------
+                    // SOLO MOSTRAR EVALUACIONES DEL EXPEDIENTE ACTUAL
+                    // ----------------------------------------------------------
+
+                    if (
+                    evaluation.expediente !=
+                        game.currentExpediente
+                    ) {
+                         return false;
+                    }
+
+                    // ----------------------------------------------------------
+                    // NO MOSTRAR EVALUACIONES YA COMPLETADAS
+                    // ----------------------------------------------------------
+
                     if (
                     game.completedEvaluations.contains(
                          evaluation.id,
@@ -767,6 +929,10 @@ class GameEngine {
                     ) {
                          return false;
                     }
+
+                    // ----------------------------------------------------------
+                    // DEBE ESTAR DESBLOQUEADA
+                    // ----------------------------------------------------------
 
                     return game.unlockedEvaluations.contains(
                          evaluation.id,
@@ -780,10 +946,7 @@ class GameEngine {
      // ============================================================
      List<Location> getAvailableLocations() {
 
-          return LocationManager
-              .availableLocations(
-               game.flags,
-          );
+          return LocationManager.availableLocations(game);
      }
 
      DecisionResult travelTo(
@@ -906,18 +1069,43 @@ class GameEngine {
               )
           ) {
                candidate++;
+          }
 
-               game.currentExpediente = candidate;
-               game.currentNodeId = "EXPEDIENTE_$candidate";
+          if (candidate <= game.currentExpediente) {
+               return;
+          }
+
+          final previous = game.currentExpediente;
+
+          for (
+          int next = previous + 1;
+          next <= candidate;
+          next++
+          ) {
+
+               game.currentExpediente = next;
+
+               game.currentNodeId =
+               "EXPEDIENTE_$next";
+
+               // ------------------------------------------------------------
+               // INTEGRACIÓN DEL EXPEDIENTE ACTUAL
+               // ------------------------------------------------------------
 
                final integrationId =
-                   "EVAL_EXP${candidate}_INTEGRATION";
+                   "EVAL_EXP${next}_INTEGRATION";
 
                if (getEvaluation(integrationId) != null) {
-                    game.unlockedEvaluations.add(integrationId);
+                    game.unlockedEvaluations.add(
+                         integrationId,
+                    );
                }
 
-               unlockFinalEvaluation(candidate);
+               // ------------------------------------------------------------
+               // EVALUACIÓN FINAL DEL EXPEDIENTE ACTUAL
+               // ------------------------------------------------------------
+
+               unlockFinalEvaluation(next);
           }
      }
 
